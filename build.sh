@@ -1,0 +1,1 @@
+gcc src/main.c src/eLibrary.c -lssl -lcrypto  `pkg-config --cflags --libs gtk4`
