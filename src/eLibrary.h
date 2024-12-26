@@ -1,8 +1,8 @@
 #ifndef ELIBRARY
 #define ELIBRARY
 
-#define USERS_DATA_PATH "/.data/users.bin"
-#define BOOKS_DATA_PATH "/.data/books.bin"
+#define USERS_DATA_PATH "data/users.bin"
+#define BOOKS_DATA_PATH "data/books.bin"
 
 #include<stdint.h>
 #include<stdbool.h>
@@ -28,8 +28,7 @@ typedef struct book_node
     Book_node* next;    
 }Book_node;
 
-void import_books_info(Book_node** head, char* path);
-void export_books_info(Book_node** head, char* path);
+void import_books_data(Book_node** head, char* path);
 
 void load_books_info(Book_node** head);
 void save_books_info(Book_node*  head);

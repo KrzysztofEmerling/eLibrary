@@ -55,7 +55,7 @@ void save_books_info(Book_node*  head)
     FILE *file = fopen(BOOKS_DATA_PATH, "wb"); 
     if (file == NULL) 
     {
-        fprintf(stderr, "Unable to open file!\n");
+        fprintf(stderr, "Unable to write file!\n");
         
         return;
     }
@@ -153,7 +153,7 @@ void save_users_info(User_node*  head)
     FILE *file = fopen(USERS_DATA_PATH, "wb"); 
     if (file == NULL) 
     {
-        fprintf(stderr, "Unable to open file!\n");
+        fprintf(stderr, "Unable to write file!\n");
         
         return;
     }
