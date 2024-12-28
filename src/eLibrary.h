@@ -58,8 +58,10 @@ typedef struct user_node
     User_node* next;    
 }User_node;
 
-void hash_password(char* plain_password, uint8_t* hashed_password);
 
+
+void hash_password(const char* plain_password, uint8_t* hashed_password);
+bool secure_compare_hashes(const uint8_t hash1[32], const uint8_t hash2[32]);
 
 void load_users_info(User_node** head);
 void save_users_info(User_node*  head);

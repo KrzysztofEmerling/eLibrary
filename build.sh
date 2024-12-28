@@ -1,1 +1,1 @@
-gcc src/main.c src/eLibrary.c -lssl -lcrypto  `pkg-config --cflags --libs gtk4`
+gcc src/main.c src/eLibrary.c  src/windows/window_menager.c  -lssl -lcrypto  `pkg-config --cflags --libs gtk4`

@@ -1,57 +1,59 @@
 #include <gtk/gtk.h>
+#include <stdio.h>  
 
 #include "eLibrary.h"
+#include "windows/window_menager.h"
 
-static void on_button_clicked(GtkButton *button, gpointer user_data)
+
+static void on_activate(GtkApplication *app, gpointer user_data)
 {
-    g_print("Hello, World!\n");
+    App_data *app_data = (App_data*) user_data;
+
+    app_data->window = GTK_WINDOW(gtk_application_window_new(app));
+    gtk_window_set_title(app_data->window, "E-Library");
+    gtk_window_set_decorated(app_data->window, TRUE);
+    
+    g_print("aktywacja");
+
+    int width = 2560 * 0.5;
+    int height = 1080 * 0.8;
+    gtk_window_set_default_size(app_data->window, width, height);
+
+    // Zmieniamy widok okna na ekran logowania
+    change_window(app_data, LOGIN);
+
+    // Wyświetlamy okno
+    gtk_window_present(app_data->window);
 }
 
-static void on_activate(GtkApplication *app, gpointer user_data) 
-{
-    GtkWidget *window = gtk_application_window_new(app);
-    gtk_window_set_title(GTK_WINDOW(window), "GTK 4 Example");
-    gtk_window_set_default_size(GTK_WINDOW(window), 400, 300);
+int main(int argc, char *argv[]) {
+    App_data app_data;
+    
+    // Przydzielamy pamięć na listy użytkowników i książek
+    app_data.Users = NULL;  // Początkowo wskaźnik jest NULL
+    app_data.Books = NULL;  // Początkowo wskaźnik jest NULL
 
-    GtkWidget *button = gtk_button_new_with_label("Click Me!");
-    g_signal_connect(button, "clicked", G_CALLBACK(on_button_clicked), NULL);
+    // Ładujemy dane użytkowników i książek
+    load_users_info(&app_data.Users); // Przekazujemy wskaźnik do wskaźnika (User_node**)
+    load_books_info(&app_data.Books); // Przekazujemy wskaźnik do wskaźnika (Book_node**)
 
-    gtk_window_set_child(GTK_WINDOW(window), button);
-
-
-    gtk_window_present(GTK_WINDOW(window));
-}
-
-int main(int argc, char *argv[])
-{
-    User_node* Users_data = NULL;
-    User user;
-
-    user.id = 0;
-    user.is_admin = true;
-    strcpy(user.email, "a.admin@library.com");
-    strcpy(user.last_name, "Emerling");
-    strcpy(user.first_name, "Krzysztof");
-    hash_password("Admin123!", user.password_hash);
-
-    user.borrowed_books_ids[0] = -1;
-    user.borrowed_books_ids[1] = -1;
-    user.borrowed_books_ids[2] = -1;
-
-    add_user(&Users_data, user);
-
-    Book_node* Books_data = NULL;
-    import_books_data(&Books_data, "books.txt");
-
+    // Tworzymy aplikację GTK
     GtkApplication *app = gtk_application_new("com.simple.library.app.gtk4", G_APPLICATION_DEFAULT_FLAGS);
 
-    g_signal_connect(app, "activate", G_CALLBACK(on_activate), NULL);
+    // Rejestrujemy sygnał aktywacji aplikacji
+    g_signal_connect(app, "activate", G_CALLBACK(on_activate), &app_data);
+
+    // Uruchamiamy aplikację
     int status = g_application_run(G_APPLICATION(app), argc, argv);
 
+    // Zwolnienie zasobów i zapis danych przed zakończeniem
     g_object_unref(app);
+    save_books_info(app_data.Books);  // Zapisujemy książki
+    save_users_info(app_data.Users);  // Zapisujemy użytkowników
 
-    save_books_info(Books_data);
-    save_users_info(Users_data);
+    // Zwalniamy pamięć po zakończeniu
+    free(app_data.Users);
+    free(app_data.Books);
 
     return status;
 }

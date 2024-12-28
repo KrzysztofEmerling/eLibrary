@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include <openssl/sha.h>
+#include <openssl/crypto.h>
 
 void import_books_data(Book_node** head, char* path)
 {
@@ -127,9 +128,12 @@ void delete_book(Book_node** head, int id)
     }
 }
 
-void hash_password(char* plain_password, uint8_t* hashed_password)
+void hash_password(const char* plain_password, uint8_t* hashed_password)
 {
     SHA256((unsigned char*)plain_password, strlen(plain_password), hashed_password);
+}
+bool secure_compare_hashes(const uint8_t hash1[32], const uint8_t hash2[32]) {
+    return CRYPTO_memcmp(hash1, hash2, 32) == 0;
 }
 
 void load_users_info(User_node** head)
