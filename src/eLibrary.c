@@ -68,8 +68,10 @@ void save_books_info(Book_node*  head)
     fclose(file);     
 }
 
+int books_counter = 0; 
 void add_book(Book_node** head, Book book)
 {
+    ++books_counter;
     Book_node* iterator = *head;
 
     if (iterator == NULL)
@@ -169,8 +171,10 @@ void save_users_info(User_node*  head)
     fclose(file);     
 }
 
+int users_counter = 0; 
 void add_user(User_node** head, User user)
 {
+    ++users_counter;
     User_node* iterator = *head;
 
     if (iterator == NULL)

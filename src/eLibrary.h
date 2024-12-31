@@ -7,6 +7,8 @@
 #include<stdint.h>
 #include<stdbool.h>
 
+extern int books_counter; 
+
 typedef struct book
 {
     int id;     
@@ -36,7 +38,7 @@ void save_books_info(Book_node*  head);
 void add_book(Book_node** head, Book book);
 void delete_book(Book_node** head, int id);
 
-
+extern int users_counter; 
 typedef struct user
 {
     int id;

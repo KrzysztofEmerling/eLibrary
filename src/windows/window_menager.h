@@ -6,18 +6,17 @@
 
 typedef enum {
     LOGIN,
-    REGISTER
+    REGISTER,
+    INFO
 } Window_type;
 
 typedef struct app_data
 {
     GtkWindow* window;
+    GtkWidget* entries[10];
 
     Book_node* Books;
     User_node* Users;
-
-    User Current_user;
-
 }App_data;
 
 void change_window(App_data* app_data, Window_type wt);
