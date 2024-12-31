@@ -18,13 +18,14 @@ typedef struct app_data
     Book_node* Books;
     User_node* Users;
 }App_data;
+extern App_data app_data;
 
-void change_window(App_data* app_data, Window_type wt);
+void change_window(Window_type wt);
 
 //void on_login_clicked(GtkButton *button, App_data* app_data);
-GtkWidget* load_login_screen(App_data* app_data);
+GtkWidget* load_login_screen();
 //void on_register_clicked(GtkButton *button, App_data* app_data);
 //bool is_valid_user(App_data* app_data, const gchar* email, const gchar* password);
 
-GtkWidget* load_register_screen(App_data* app_data);
+GtkWidget* load_register_screen();
 #endif

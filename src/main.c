@@ -5,29 +5,27 @@
 #include "windows/window_menager.h"
 
 
-static void on_activate(GtkApplication *app, gpointer user_data)
+static void on_activate(GtkApplication *app)
 {
-    App_data *app_data = (App_data*) user_data;
 
-    app_data->window = GTK_WINDOW(gtk_application_window_new(app));
-    gtk_window_set_title(app_data->window, "E-Library");
-    gtk_window_set_decorated(app_data->window, TRUE);
+    app_data.window = GTK_WINDOW(gtk_application_window_new(app));
+    gtk_window_set_title(app_data.window, "E-Library");
+    gtk_window_set_decorated(app_data.window, TRUE);
     
     g_print("aktywacja");
 
     int width = 2560 * 0.5;
     int height = 1080 * 0.8;
-    gtk_window_set_default_size(app_data->window, width, height);
+    gtk_window_set_default_size(app_data.window, width, height);
 
     // Zmieniamy widok okna na ekran logowania
-    change_window(app_data, LOGIN);
+    change_window(LOGIN);
 
     // Wyświetlamy okno
-    gtk_window_present(app_data->window);
+    gtk_window_present(app_data.window);
 }
 
 int main(int argc, char *argv[]) {
-    App_data app_data;
     
     // Przydzielamy pamięć na listy użytkowników i książek
     app_data.Users = NULL;  // Początkowo wskaźnik jest NULL
@@ -41,7 +39,7 @@ int main(int argc, char *argv[]) {
     GtkApplication *app = gtk_application_new("com.simple.library.app.gtk4", G_APPLICATION_DEFAULT_FLAGS);
 
     // Rejestrujemy sygnał aktywacji aplikacji
-    g_signal_connect(app, "activate", G_CALLBACK(on_activate), &app_data);
+    g_signal_connect(app, "activate", G_CALLBACK(on_activate), NULL);
 
     // Uruchamiamy aplikację
     int status = g_application_run(G_APPLICATION(app), argc, argv);
