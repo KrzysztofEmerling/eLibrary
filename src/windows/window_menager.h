@@ -4,10 +4,13 @@
 #ifndef WINDOW_MENAGER
 #define WINDOW_MENAGER
 
-typedef enum {
+typedef enum 
+{
     LOGIN,
     REGISTER,
-    INFO
+    REGISTRATION_INFO,
+    ADMIN_PANEL,
+    NORMAL_PANEL
 } Window_type;
 
 typedef struct app_data
@@ -17,12 +20,10 @@ typedef struct app_data
 
     Book_node* Books;
     User_node* Users;
+
+    int current_user_id;
 }App_data;
 extern App_data app_data;
 
 void change_window(Window_type wt);
-
-GtkWidget* load_login_screen();
-
-GtkWidget* load_register_screen();
 #endif
