@@ -91,6 +91,7 @@ void add_book(Book_node** head, Book book)
           exit(1);
        }
        element->book_info = book;
+       element->next = NULL;
 
         while (iterator->next != NULL)
         {
@@ -107,7 +108,7 @@ void delete_book(Book_node** head, int id)
     while(iterator->next != NULL && iterator->book_info.id != id)
     {
         prev = iterator;
-        iterator->next;
+        iterator = iterator->next;
     }
 
     if(iterator->book_info.id != id)
@@ -165,7 +166,7 @@ void save_users_info(User_node*  head)
     }
     while(head != NULL)
     {   
-        fwrite( &(head->user_info), sizeof(Book), 1, file); 
+        fwrite( &(head->user_info), sizeof(User), 1, file); 
         head = head->next;
     }
     fclose(file);     
@@ -192,8 +193,9 @@ void add_user(User_node** head, User user)
         if ((element = (User_node *)malloc(sizeof(User_node))) == NULL) {
           fprintf(stderr, "Za mało pamięci!\n");
           exit(1);
-       }
-       element->user_info = user;
+        }
+        element->user_info = user;
+        element->next = NULL;
 
         while (iterator->next != NULL)
         {
@@ -210,7 +212,7 @@ void delete_user(User_node** head, int id)
     while(iterator->next != NULL && iterator->user_info.id != id)
     {
         prev = iterator;
-        iterator->next;
+        iterator = iterator->next;
     }
 
     if(iterator->user_info.id != id)
@@ -230,5 +232,52 @@ void delete_user(User_node** head, int id)
 
             save_users_info(*head);
         }
+    }
+}
+
+
+//_____________________ DEBUG _______________________
+
+void print_books(Book_node* head) {
+    Book_node* current = head;
+    printf("Lista książek:\n");
+    while (current != NULL) {
+        Book book = current->book_info;
+        printf("ID: %d\n", book.id);
+        printf("Autor: %s\n", book.author);
+        printf("Tytuł: %s\n", book.title);
+        printf("Gatunek: %s\n", book.genre);
+        printf("Rok publikacji: %d\n", book.publication_year);
+        printf("Liczba kopii: %d\n", book.total_copies);
+        printf("Dostępne kopie: %d\n", book.available_copies);
+        printf("Cena detaliczna: %.2f\n", book.retail_price);
+        printf("-------------------------\n");
+        current = current->next;
+    }
+}
+
+void print_users(User_node* head) {
+    User_node* current = head;
+    printf("Lista użytkowników:\n");
+    while (current != NULL) {
+        User user = current->user_info;
+        printf("ID: %d\n", user.id);
+        printf("Imię: %s\n", user.first_name);
+        printf("Nazwisko: %s\n", user.last_name);
+        printf("Email: %s\n", user.email);
+        printf("Administrator: %s\n", user.is_admin ? "Tak" : "Nie");
+        printf("Wypożyczone książki (ID):");
+        for (int i = 0; i < sizeof(user.borrowed_books_ids) / sizeof(user.borrowed_books_ids[0]); i++) {
+            if (user.borrowed_books_ids[i] != -1) 
+            {
+                printf(" %d", user.borrowed_books_ids[i]);
+            }
+            else
+            {
+                printf(" -");
+            }
+        }
+        printf("\n-------------------------\n");
+        current = current->next;
     }
 }

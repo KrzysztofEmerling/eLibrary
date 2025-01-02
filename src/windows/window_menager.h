@@ -22,10 +22,7 @@ extern App_data app_data;
 
 void change_window(Window_type wt);
 
-//void on_login_clicked(GtkButton *button, App_data* app_data);
 GtkWidget* load_login_screen();
-//void on_register_clicked(GtkButton *button, App_data* app_data);
-//bool is_valid_user(App_data* app_data, const gchar* email, const gchar* password);
 
 GtkWidget* load_register_screen();
 #endif

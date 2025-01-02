@@ -71,4 +71,7 @@ void save_users_info(User_node*  head);
 void add_user(User_node** head, User user);
 void delete_user(User_node** head, int id);
 
+void print_books(Book_node* head);
+void print_users(User_node* head);
+
 #endif 

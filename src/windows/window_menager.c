@@ -67,17 +67,12 @@ GtkWidget* load_login_screen() {
     GtkWidget *register_button = gtk_button_new_with_label("Nie masz konta? Zarejestruj się");
     app_data.entries[2] = gtk_label_new("");
 
-    // Ukrycie hasła
     gtk_entry_set_visibility(GTK_ENTRY(app_data.entries[1]), FALSE);
-
-    // Ustawienie stylu dla etykiety błędu
     gtk_widget_set_sensitive(app_data.entries[2], FALSE);
 
-    // Połączenie sygnałów
     g_signal_connect(login_button, "clicked", G_CALLBACK(on_login_submit_clicked), NULL);
     g_signal_connect(register_button, "clicked", G_CALLBACK(on_register_clicked), NULL);
 
-    // Dodanie widżetów do kontenera
     gtk_box_append(GTK_BOX(login_box), app_data.entries[0]);
     gtk_box_append(GTK_BOX(login_box), app_data.entries[1]);
     gtk_box_append(GTK_BOX(login_box), app_data.entries[2]);
@@ -98,18 +93,13 @@ GtkWidget* load_registration_screen() {
     GtkWidget *login_button = gtk_button_new_with_label("Powrót do logowania");
     app_data.entries[5] = gtk_label_new("");
 
-    // Ukrycie hasła
     gtk_entry_set_visibility(GTK_ENTRY(app_data.entries[3]), FALSE);
     gtk_entry_set_visibility(GTK_ENTRY(app_data.entries[4]), FALSE);
-
-    // Ustawienie stylu dla etykiety błędu
     gtk_widget_set_sensitive(app_data.entries[5], FALSE);
 
-    // Połączenie sygnałów
     g_signal_connect(register_button, "clicked", G_CALLBACK(on_register_submit_clicked), NULL);
     g_signal_connect(login_button, "clicked", G_CALLBACK(on_login_clicked), NULL);
 
-    // Dodanie widżetów do kontenera
     gtk_box_append(GTK_BOX(register_box), app_data.entries[0]);
     gtk_box_append(GTK_BOX(register_box), app_data.entries[1]);
     gtk_box_append(GTK_BOX(register_box), app_data.entries[2]);
@@ -125,12 +115,10 @@ GtkWidget* load_registration_screen() {
 void change_window(Window_type wt) {
     GtkWidget *new_widget = NULL;
 
-    // Usuwamy poprzedni widget
     if (current_widget != NULL) {
         gtk_widget_unparent(current_widget);
     }
 
-    // Wybieramy, który ekran wyświetlić
     switch (wt) {
         case LOGIN:
             new_widget = load_login_screen();
