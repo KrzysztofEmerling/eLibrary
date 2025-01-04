@@ -94,6 +94,7 @@ void on_register_submit_clicked(GtkButton *button)
         return;
     }
     reti = regexec(&regex, email, 0, NULL, 0);
+    regfree(&regex);
     if (reti) 
     {
         gtk_editable_set_text(GTK_EDITABLE(app_data.entries[2]), "");

@@ -10,7 +10,9 @@ typedef enum
     REGISTER,
     REGISTRATION_INFO,
     ADMIN_PANEL,
-    NORMAL_PANEL
+    NORMAL_PANEL,
+    DELETION_INFO
+
 } Window_type;
 
 typedef struct app_data

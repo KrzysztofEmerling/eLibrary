@@ -1,7 +1,8 @@
 #include "panel_window.h"
 
 #include "window_menager.h"
-
+#include <regex.h>
+#include <ctype.h>
 
 static GtkWidget *current_panel;
 static GtkWidget *panel_box; 
@@ -41,18 +42,123 @@ void on_profile_management_clicked()
 
 void on_change_email_button_clicked(GtkButton *button)
 {
+    gtk_label_set_text(GTK_LABEL(app_data.entries[1]), "");
+    gtk_label_set_text(GTK_LABEL(app_data.entries[5]), "");
+    gtk_label_set_text(GTK_LABEL(app_data.entries[6]), "");
 
+    const char *temp =  gtk_editable_get_text(GTK_EDITABLE(app_data.entries[0]));
+    char email[128];
+    strncpy(email, temp, sizeof(email) - 1);
+    email[sizeof(email) - 1] = '\0'; 
+
+    for (int i = 0; email[i]; i++) 
+    {
+        email[i] = tolower(email[i]);
+    }
+
+    regex_t regex;
+    int reti = regcomp(&regex, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", REG_EXTENDED);
+    if (reti)
+    {
+        gtk_label_set_text(GTK_LABEL(app_data.entries[1]), "Błąd przy sprawdzaniu emaila.");
+        return;
+    }
+    reti = regexec(&regex, email, 0, NULL, 0);
+    regfree(&regex);
+    if (reti) 
+    {
+        gtk_editable_set_text(GTK_EDITABLE(app_data.entries[0]), "");
+        gtk_label_set_text(GTK_LABEL(app_data.entries[1]), "Niepoprawny format emaila.");
+        
+    }
+    else
+    {
+        gtk_editable_set_text(GTK_EDITABLE(app_data.entries[0]), "");
+        gtk_label_set_text(GTK_LABEL(app_data.entries[1]), "Email został zmieniony.");
+
+        User_node* wsk = app_data.Users;
+
+        while (wsk != NULL) 
+        {
+            if (wsk->user_info.id == current_user.id) 
+            {
+                strcpy(wsk->user_info.email, email);
+                return; 
+            }
+            wsk = wsk->next;
+        }
+    }
 }
 
 void on_change_passward_button_clicked(GtkButton *button)
 {
-    
+    gtk_label_set_text(GTK_LABEL(app_data.entries[1]), "");
+    gtk_label_set_text(GTK_LABEL(app_data.entries[5]), "");
+    gtk_label_set_text(GTK_LABEL(app_data.entries[6]), "");
+
+    const char* old_pass = gtk_editable_get_text(GTK_EDITABLE(app_data.entries[2]));
+    uint8_t old_hash[32];
+    hash_password(old_pass, old_hash);
+
+    const char* new_pass1 = gtk_editable_get_text(GTK_EDITABLE(app_data.entries[3]));
+    const char* new_pass2 = gtk_editable_get_text(GTK_EDITABLE(app_data.entries[4]));
+
+    User_node* wsk = app_data.Users;
+    while (wsk != NULL) 
+    {
+        if (wsk->user_info.id == current_user.id) break;
+        wsk = wsk->next;
+    }
+
+    // Sprawdzenie hasła
+    if(!secure_compare_hashes(wsk->user_info.password_hash, old_hash))
+    {
+        gtk_label_set_text(GTK_LABEL(app_data.entries[5]), "Stare hasło nie jest poprawne.");
+        gtk_editable_set_text(GTK_EDITABLE(app_data.entries[2]), "");     
+        return;
+    }
+    else if (strcmp(new_pass1 , new_pass2) != 0)
+    {
+        gtk_label_set_text(GTK_LABEL(app_data.entries[5]), "Hasła nie pasują do siebie.");
+        gtk_editable_set_text(GTK_EDITABLE(app_data.entries[3]), "");
+        gtk_editable_set_text(GTK_EDITABLE(app_data.entries[4]), "");
+        return;
+    }
+    else if(strlen(new_pass1 ) < 6)
+    {
+        gtk_label_set_text(GTK_LABEL(app_data.entries[5]), "Minimalna długość hasła to 6 znaków.");
+        gtk_editable_set_text(GTK_EDITABLE(app_data.entries[3]), "");
+        gtk_editable_set_text(GTK_EDITABLE(app_data.entries[4]), "");  
+        return;
+    }
+
+    uint8_t new_hash[32];
+    hash_password(new_pass1, new_hash);
+    for(int i = 0; i < 32; i++)
+    {
+        wsk->user_info.password_hash[i] = new_hash[i];
+    }
+
 }
 
 void on_delete_button_clicked(GtkButton *button)
 {
-    
+    gtk_label_set_text(GTK_LABEL(app_data.entries[1]), "");
+    gtk_label_set_text(GTK_LABEL(app_data.entries[5]), "");
+    gtk_label_set_text(GTK_LABEL(app_data.entries[6]), "");
+
+    if(current_user.borrowed_books_ids[0] == -1 && current_user.borrowed_books_ids[1] == -1 && current_user.borrowed_books_ids[2] == -1)
+    {
+        delete_user(&(app_data.Users) ,current_user.id);
+        change_window(DELETION_INFO);
+    }
+    else
+    {
+        gtk_label_set_text(GTK_LABEL(app_data.entries[6]), "Nie można usunąć konta.\nOddaj wszystkie wyporzyczone książki.");
+    }
 }
+
+
 
 
 GtkWidget* create_borrowed_books_page()
@@ -79,16 +185,19 @@ GtkWidget* create_borrowed_books_page()
                                                    i + 1, wsk->book_info.title, wsk->book_info.author, wsk->book_info.genre);
             book_label = gtk_label_new(formatted_text);
             return_button = gtk_button_new_with_label("Oddaj");
+            app_data.entries[i] = gtk_label_new("");
         }
         else
         {
             book_label = gtk_label_new("Możesz jeszcze wypożyczyć książkę");
             return_button = gtk_button_new_with_label("Oddaj");
             gtk_widget_set_sensitive(return_button, FALSE);
+            app_data.entries[i] = gtk_label_new("");
         }
         
         gtk_box_append(GTK_BOX(item_box), book_label);
         gtk_box_append(GTK_BOX(item_box), return_button);
+        gtk_box_append(GTK_BOX(item_box), app_data.entries[i]);
         gtk_box_append(GTK_BOX(item_box), gtk_label_new("\n"));
         
         gtk_box_append(GTK_BOX(main_box), item_box);
@@ -162,7 +271,7 @@ GtkWidget* create_search_books_page()
 }
 
 GtkWidget* create_profile_management_page() {
-    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 15);
     
     GtkWidget *profile_label = gtk_label_new("Zarządzanie profilem użytkownika");
     gtk_box_append(GTK_BOX(box), profile_label);
@@ -178,9 +287,7 @@ GtkWidget* create_profile_management_page() {
     gtk_box_append(GTK_BOX(box), app_data.entries[0]);
     gtk_box_append(GTK_BOX(box), change_email_button);
     gtk_box_append(GTK_BOX(box), app_data.entries[1]);
-
-    
-    //g_signal_connect(change_email_button, "clicked", G_CALLBACK(on_change_email), app_data.entries[0]);
+    g_signal_connect(change_email_button, "clicked", G_CALLBACK(on_change_email_button_clicked), NULL);
     
     // Sekcja zmiany hasła
     GtkWidget *password_label = gtk_label_new("Zmiana hasła:");
@@ -202,9 +309,10 @@ GtkWidget* create_profile_management_page() {
     gtk_box_append(GTK_BOX(box), app_data.entries[2]);   
     gtk_box_append(GTK_BOX(box), app_data.entries[3]);  
     gtk_box_append(GTK_BOX(box), app_data.entries[4]);
+    gtk_box_append(GTK_BOX(box), change_password_button);
     gtk_box_append(GTK_BOX(box), app_data.entries[5]);
     
-    //g_signal_connect(change_password_button, "clicked", G_CALLBACK(on_change_password), (gpointer)(GtkEntry *[]){old_password_entry, new_password_entry1, new_password_entry2});
+    g_signal_connect(change_password_button, "clicked", G_CALLBACK(on_change_passward_button_clicked), NULL);
     
     // Sekcja usuwania konta
     GtkWidget *delete_label = gtk_label_new("Usuń konto:");
@@ -216,6 +324,8 @@ GtkWidget* create_profile_management_page() {
     gtk_box_append(GTK_BOX(box), delete_button);
     gtk_box_append(GTK_BOX(box), app_data.entries[6]);
 
+    g_signal_connect(delete_button, "clicked", G_CALLBACK(on_delete_button_clicked), NULL);
+    
     return box;
 }
 
@@ -272,4 +382,19 @@ GtkWidget* load_panel_screen()
     return panel_box;
 }
 
+GtkWidget* load_deletion_info_screen()
+{
+    GtkWidget *register_info_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
 
+    GtkWidget *label1 = gtk_label_new("Sukces!");
+    GtkWidget *label2 = gtk_label_new("Konto zostało usunięte");
+    GtkWidget *login_button = gtk_button_new_with_label("Powrót do logowania");
+
+    g_signal_connect(login_button, "clicked", G_CALLBACK(on_logout_clicked), NULL);
+
+    gtk_box_append(GTK_BOX(register_info_box), label1);
+    gtk_box_append(GTK_BOX(register_info_box), label2);
+    gtk_box_append(GTK_BOX(register_info_box), login_button);
+
+    return register_info_box;
+}

@@ -14,6 +14,15 @@ void change_window(Window_type wt)
         gtk_widget_unparent(current_widget);
     }
 
+    // for (int i = 0; i < 10; i++) 
+    // {
+    //     if (GTK_IS_WIDGET(app_data.entries[i])) 
+    //     {
+    //         gtk_widget_unparent(app_data.entries[i]);  
+    //         app_data.entries[i] = NULL;              
+    //     }
+    // }
+
     switch (wt)
     {
         case LOGIN:
@@ -28,6 +37,9 @@ void change_window(Window_type wt)
 
         case NORMAL_PANEL:
             new_widget = load_panel_screen();
+            break;
+        case DELETION_INFO:
+            new_widget = load_deletion_info_screen();
             break;
     }
 
