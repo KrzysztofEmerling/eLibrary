@@ -23,6 +23,7 @@ typedef struct app_data
 
     int current_user_id;
 }App_data;
+
 extern App_data app_data;
 
 void change_window(Window_type wt);
