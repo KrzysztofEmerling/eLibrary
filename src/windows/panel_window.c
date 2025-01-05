@@ -40,16 +40,16 @@ void on_profile_management_clicked()
 }
 
 
-void on_return_button_clicked(GtkButton *button, Book *book)
+void on_return_button_clicked(GtkButton *button, Book_node *book_wsk)
 {
     int index = 0;
     while( index < 2)
     {
-        if(current_user.borrowed_books_ids[index] == book->id) break;     
+        if(current_user.borrowed_books_ids[index] == book_wsk->book_info.id) break;     
         ++index;
     }
     current_user.borrowed_books_ids[index] = -1;
-    book->available_copies += 1;
+    book_wsk->book_info.available_copies += 1;
      
     User_node *wsk = app_data.Users;
     while(wsk != NULL)
@@ -57,6 +57,7 @@ void on_return_button_clicked(GtkButton *button, Book *book)
        if(wsk->user_info.id == current_user.id) break;
        wsk = wsk->next;
     }
+
     wsk->user_info.borrowed_books_ids[index] = -1;
 
     gtk_label_set_text(GTK_LABEL(app_data.entries[0 + 2 * index]), "Możesz wypożyczyć książkę");
@@ -221,7 +222,7 @@ GtkWidget* create_borrowed_books_page()
         gtk_box_append(GTK_BOX(item_box), app_data.entries[0 + 2 * i]);
         gtk_box_append(GTK_BOX(item_box), app_data.entries[1 + 2 * i]);
         gtk_box_append(GTK_BOX(item_box), gtk_label_new("\n"));
-        if(!is_empty) g_signal_connect(app_data.entries[1 + 2 * i], "clicked", G_CALLBACK(on_return_button_clicked), &(wsk->book_info));
+        if(!is_empty) g_signal_connect(app_data.entries[1 + 2 * i], "clicked", G_CALLBACK(on_return_button_clicked), wsk);
         
         gtk_box_append(GTK_BOX(main_box), item_box);
     }
@@ -232,38 +233,8 @@ GtkWidget* create_borrowed_books_page()
 GtkWidget* create_search_books_page()
 {
     GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    
-    // Pasek wyszukiwania
-    GtkWidget *search_label = gtk_label_new("Wyszukaj książki:");
-    GtkWidget *search_entry = gtk_entry_new();
-    GtkWidget *search_button = gtk_button_new_with_label("Szukaj");
-    GtkWidget *search_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-    GtkWidget *search_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
 
-    gtk_box_append(GTK_BOX(search_hbox), search_entry);
-    gtk_box_append(GTK_BOX(search_hbox), search_button);
-    
-    gtk_box_append(GTK_BOX(search_box), search_label);
-    gtk_box_append(GTK_BOX(search_box), search_hbox);
-
-    // Filtr
-    GtkWidget *filter_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    GtkWidget *filter_label = gtk_label_new("Filtruj zakres:");
-    GtkWidget *filter_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-    GtkWidget *min_entry = gtk_entry_new();
-    GtkWidget *max_entry = gtk_entry_new();
-
-    GtkStringList *filter_options = gtk_string_list_new((const char*[]){"Rok wydania", "Dostępne egzęplarze", "Cena", NULL});
-    GtkWidget *filter_combo = gtk_drop_down_new(G_LIST_MODEL(filter_options), NULL);
-
-    gtk_box_append(GTK_BOX(filter_hbox), gtk_label_new("Od:"));
-    gtk_box_append(GTK_BOX(filter_hbox), min_entry);
-    gtk_box_append(GTK_BOX(filter_hbox), gtk_label_new("Do:"));
-    gtk_box_append(GTK_BOX(filter_hbox), max_entry);
-    gtk_box_append(GTK_BOX(filter_hbox), filter_combo);
-    
-    gtk_box_append(GTK_BOX(filter_box), filter_label);
-    gtk_box_append(GTK_BOX(filter_box), filter_hbox);
+    //gtk_entry_set_placeholder_text(GTK_ENTRY(app_data.entries[1]), "Max:");   
 
     // Sortowanie
     GtkWidget *sort_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
@@ -271,24 +242,23 @@ GtkWidget* create_search_books_page()
     GtkWidget *sort_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
 
     GtkStringList *sort_options = gtk_string_list_new((const char*[]){"Tytuł", "Autor", "Gatunek", "Rok wydania", "cena", NULL});
-    GtkWidget *sort_combo = gtk_drop_down_new(G_LIST_MODEL(sort_options), NULL);
-    GtkWidget *radio_asc = gtk_check_button_new_with_label("⬆");
-    GtkWidget *radio_desc = gtk_check_button_new_with_label("⬇");
+    app_data.entries[0] = gtk_drop_down_new(G_LIST_MODEL(sort_options), NULL);
+    app_data.entries[1] = gtk_check_button_new_with_label("⬆");
+    app_data.entries[2] = gtk_check_button_new_with_label("⬇");
     GtkWidget *sort_button = gtk_button_new_with_label("Sortuj");
-    gtk_check_button_set_group(GTK_CHECK_BUTTON(radio_desc), GTK_CHECK_BUTTON(radio_asc));
+    gtk_check_button_set_group(GTK_CHECK_BUTTON(app_data.entries[2]), GTK_CHECK_BUTTON(app_data.entries[1]));
 
-    gtk_box_append(GTK_BOX(sort_hbox), sort_combo);
-    gtk_box_append(GTK_BOX(sort_hbox), radio_asc);
-    gtk_box_append(GTK_BOX(sort_hbox), radio_desc);
+    gtk_box_append(GTK_BOX(sort_hbox), app_data.entries[0]);
+    gtk_box_append(GTK_BOX(sort_hbox), app_data.entries[1]);
+    gtk_box_append(GTK_BOX(sort_hbox), app_data.entries[2]);
     gtk_box_append(GTK_BOX(sort_hbox), sort_button);
 
     gtk_box_append(GTK_BOX(sort_box), sort_label);
     gtk_box_append(GTK_BOX(sort_box), sort_hbox);
 
     // Dodanie do głównego boxa
-    gtk_box_append(GTK_BOX(main_box), search_box);
-    gtk_box_append(GTK_BOX(main_box), filter_box);
     gtk_box_append(GTK_BOX(main_box), sort_box);
+
 
     return main_box;
 }

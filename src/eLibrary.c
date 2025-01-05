@@ -207,6 +207,12 @@ void add_user(User_node** head, User user)
 }
 void delete_user(User_node** head, int id)
 {
+    if (*head == NULL)
+    {
+        fprintf(stderr, "Lista jest pusta, nie mozna usunac uzytkownika!\n");
+        return;
+    }
+
     User_node* iterator = *head;
     User_node* prev = *head;
     while(iterator->next != NULL && iterator->user_info.id != id)
@@ -214,23 +220,32 @@ void delete_user(User_node** head, int id)
         prev = iterator;
         iterator = iterator->next;
     }
-
+    //dla 1 użytkownika w bazie oba wskazują na head
     if(iterator->user_info.id != id)
     {
-        fprintf(stderr, "Nie znaleziono ksiazki o id %d!\n", id);
+        fprintf(stderr, "Nie znaleziono użytkownika o id %d!\n", id);
     }
     else
     {
-        if(iterator->user_info.borrowed_books_ids[0] == -1)
+        if(iterator->user_info.borrowed_books_ids[0] == -1 && iterator->user_info.borrowed_books_ids[1] == -1 && iterator->user_info.borrowed_books_ids[2] == -1) 
         {
-            fprintf(stderr, "Nie mozna zamknac konta usera o id %d, poniewaz ma nie oddane ksiazki!\n", id);
+            //obsługa usuwania użytkowników
+            if(prev == iterator)
+            {
+                free(iterator);
+                (*head) = NULL;
+            }
+            else
+            {
+                prev->next = iterator->next;
+                free(iterator);
+
+                save_users_info(*head);
+            }
         }
         else
         {
-            prev->next = iterator->next;
-            free(iterator);
-
-            save_users_info(*head);
+            fprintf(stderr, "Nie mozna zamknac konta usera o id %d, poniewaz ma nie oddane ksiazki!\n", id);
         }
     }
 }
