@@ -185,6 +185,7 @@ void on_delete_button_clicked(GtkButton *button)
 
 GtkWidget* create_borrowed_books_page()
 {
+
     GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     for (int i = 0; i < 3; i++) 
     {
@@ -234,14 +235,12 @@ GtkWidget* create_search_books_page()
 {
     GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
 
-    //gtk_entry_set_placeholder_text(GTK_ENTRY(app_data.entries[1]), "Max:");   
-
     // Sortowanie
     GtkWidget *sort_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     GtkWidget *sort_label = gtk_label_new("Sortuj według:");
     GtkWidget *sort_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
 
-    GtkStringList *sort_options = gtk_string_list_new((const char*[]){"Tytuł", "Autor", "Gatunek", "Rok wydania", "cena", NULL});
+    GtkStringList *sort_options = gtk_string_list_new((const char*[]){"Tytuł", "Autor", "Gatunek", "Rok wydania", "Cena", NULL});
     app_data.entries[0] = gtk_drop_down_new(G_LIST_MODEL(sort_options), NULL);
     app_data.entries[1] = gtk_check_button_new_with_label("⬆");
     app_data.entries[2] = gtk_check_button_new_with_label("⬇");
@@ -256,12 +255,49 @@ GtkWidget* create_search_books_page()
     gtk_box_append(GTK_BOX(sort_box), sort_label);
     gtk_box_append(GTK_BOX(sort_box), sort_hbox);
 
-    // Dodanie do głównego boxa
     gtk_box_append(GTK_BOX(main_box), sort_box);
+    gtk_box_append(GTK_BOX(main_box), gtk_label_new("\n"));
+    gtk_box_append(GTK_BOX(main_box), gtk_label_new("Books list:"));
 
+
+    GtkWidget *book_list_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    Book_node *current_book = app_data.Books; 
+    while (current_book != NULL) 
+    {
+        GtkWidget *book_hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+        GtkWidget *book_hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+        
+        const char *formatted_text1 = g_strdup_printf("%s, %s, rok %d", current_book->book_info.title, current_book->book_info.author, current_book->book_info.publication_year);
+        const char *formatted_text2 = g_strdup_printf("Gatunek: %s, dostępnych: %d, cena detaliczna: %.2f $.", current_book->book_info.genre, current_book->book_info.available_copies, current_book->book_info.retail_price);
+
+        GtkWidget *book_label1 = gtk_label_new(formatted_text1);
+        GtkWidget *rent_button = gtk_button_new_with_label("Wypożycz");
+        GtkWidget *book_label2 = gtk_label_new(formatted_text2);
+        GtkWidget *buy_button = gtk_button_new_with_label("Kup");
+        
+        gtk_box_append(GTK_BOX(book_hbox1), book_label1);
+        gtk_box_append(GTK_BOX(book_hbox1), rent_button);
+
+        gtk_box_append(GTK_BOX(book_hbox2), book_label2);
+        gtk_box_append(GTK_BOX(book_hbox2), buy_button);
+
+        gtk_box_append(GTK_BOX(book_list_box), book_hbox1);
+        gtk_box_append(GTK_BOX(book_list_box), book_hbox2);
+        gtk_box_append(GTK_BOX(book_list_box), gtk_label_new("\n"));
+
+        current_book = current_book->next; 
+    }
+
+    // Tworzenie okna przewijania
+    GtkWidget *scrolled_window = gtk_scrolled_window_new();
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC); 
+    gtk_widget_set_size_request(scrolled_window, -1, 500); 
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), book_list_box);
+    gtk_box_append(GTK_BOX(main_box), scrolled_window);
 
     return main_box;
 }
+
 
 GtkWidget* create_profile_management_page() {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 15);
