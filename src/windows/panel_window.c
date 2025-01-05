@@ -40,6 +40,29 @@ void on_profile_management_clicked()
 }
 
 
+void on_return_button_clicked(GtkButton *button, Book *book)
+{
+    int index = 0;
+    while( index < 2)
+    {
+        if(current_user.borrowed_books_ids[index] == book->id) break;     
+        ++index;
+    }
+    current_user.borrowed_books_ids[index] = -1;
+    book->available_copies += 1;
+     
+    User_node *wsk = app_data.Users;
+    while(wsk != NULL)
+    {
+       if(wsk->user_info.id == current_user.id) break;
+       wsk = wsk->next;
+    }
+    wsk->user_info.borrowed_books_ids[index] = -1;
+
+    gtk_label_set_text(GTK_LABEL(app_data.entries[0 + 2 * index]), "Możesz wypożyczyć książkę");
+    gtk_widget_set_sensitive(app_data.entries[1 + 2 * index], FALSE);
+}
+
 void on_change_email_button_clicked(GtkButton *button)
 {
     gtk_label_set_text(GTK_LABEL(app_data.entries[1]), "");
@@ -159,46 +182,46 @@ void on_delete_button_clicked(GtkButton *button)
 }
 
 
-
-
 GtkWidget* create_borrowed_books_page()
 {
     GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    
     for (int i = 0; i < 3; i++) 
     {
         GtkWidget *item_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-        GtkWidget *book_label = NULL;
-        GtkWidget *return_button = NULL;
+        Book_node *wsk;
+        bool is_empty = true;
 
         if(current_user.borrowed_books_ids[i] >= 0)
         {
-            Book_node *wsk = app_data.Books;
+            wsk = app_data.Books;
             while(wsk != NULL)
             {
                 if(wsk->book_info.id == current_user.borrowed_books_ids[i]) break;
                 wsk = wsk->next;
             }
+
             if(wsk == NULL) continue;
 
+            is_empty = false;
             char* formatted_text = g_strdup_printf("Książka %d:\nTytuł: %s\nAutor: %s\nGatunek: %s\n", 
                                                    i + 1, wsk->book_info.title, wsk->book_info.author, wsk->book_info.genre);
-            book_label = gtk_label_new(formatted_text);
-            return_button = gtk_button_new_with_label("Oddaj");
-            app_data.entries[i] = gtk_label_new("");
+            app_data.entries[0 + 2 * i] = gtk_label_new(formatted_text);
+            app_data.entries[1 + 2 * i] = gtk_button_new_with_label("Oddaj");
+
+            g_free(formatted_text);
+
         }
         else
         {
-            book_label = gtk_label_new("Możesz jeszcze wypożyczyć książkę");
-            return_button = gtk_button_new_with_label("Oddaj");
-            gtk_widget_set_sensitive(return_button, FALSE);
-            app_data.entries[i] = gtk_label_new("");
+            app_data.entries[0 + 2 * i] = gtk_label_new("Możesz wypożyczyć książkę");
+            app_data.entries[1 + 2 * i] = gtk_button_new_with_label("Oddaj");
+            gtk_widget_set_sensitive(app_data.entries[1 + 2 * i], FALSE);
         }
         
-        gtk_box_append(GTK_BOX(item_box), book_label);
-        gtk_box_append(GTK_BOX(item_box), return_button);
-        gtk_box_append(GTK_BOX(item_box), app_data.entries[i]);
+        gtk_box_append(GTK_BOX(item_box), app_data.entries[0 + 2 * i]);
+        gtk_box_append(GTK_BOX(item_box), app_data.entries[1 + 2 * i]);
         gtk_box_append(GTK_BOX(item_box), gtk_label_new("\n"));
+        if(!is_empty) g_signal_connect(app_data.entries[1 + 2 * i], "clicked", G_CALLBACK(on_return_button_clicked), &(wsk->book_info));
         
         gtk_box_append(GTK_BOX(main_box), item_box);
     }

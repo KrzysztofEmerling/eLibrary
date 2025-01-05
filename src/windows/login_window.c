@@ -32,7 +32,6 @@ void on_login_submit_clicked(GtkButton *button)
     
     if ( wsk != NULL && secure_compare_hashes(wsk->user_info.password_hash, hash)) 
     {
-        //g_print("poprawne logowanie");
         app_data.current_user_id = wsk->user_info.id;
         //TODO: dodać możliwość logowania się do panelu admina;
         change_window(NORMAL_PANEL);
