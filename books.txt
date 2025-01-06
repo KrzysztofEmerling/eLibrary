@@ -1,5 +1,5 @@
-1;J.K. Rowling;Harry Potter and the Philosopher's Stone;Fantasy;1997;10;39.99;
-2;J.R.R. Tolkien;The Hobbit;Fantasy;1937;15;29.99;
+1;J.K. Rowling;Harry Potter and the Philosopher's Stone;Fantasy;1997;2;39.99;
+2;J.R.R. Tolkien;The Hobbit;Fantasy;1937;2;29.99;
 3;George Orwell;1984;Dystopian;1949;20;19.99;
 4;Harper Lee;To Kill a Mockingbird;Fiction;1960;12;24.99;
 5;F. Scott Fitzgerald;The Great Gatsby;Classic;1925;8;14.99;

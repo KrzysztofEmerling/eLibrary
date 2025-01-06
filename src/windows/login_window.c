@@ -5,6 +5,8 @@
 #include <regex.h>
 #include <ctype.h>
 
+
+
 void on_register_clicked(GtkButton *button) 
 {
     change_window(REGISTER);
@@ -201,7 +203,6 @@ GtkWidget* load_registration_info_screen()
     gtk_box_append(GTK_BOX(register_info_box), label1);
     gtk_box_append(GTK_BOX(register_info_box), label2);
     gtk_box_append(GTK_BOX(register_info_box), login_button);
-
     return register_info_box;
 }
 

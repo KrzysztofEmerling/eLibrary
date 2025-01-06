@@ -4,6 +4,7 @@
 #include "eLibrary.h"
 #include "windows/window_menager.h"
 
+
 void create_example_data()
 {
     User user;
@@ -36,6 +37,7 @@ static void on_activate(GtkApplication *app)
 
     change_window(LOGIN);
     gtk_window_present(app_data.window);
+
 }
 
 int main(int argc, char *argv[]) {

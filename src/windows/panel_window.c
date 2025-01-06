@@ -182,6 +182,72 @@ void on_delete_button_clicked(GtkButton *button)
     }
 }
 
+void on_borrow_book_button_clicked(GtkButton *button, Book_node *book_wsk)
+{
+
+    bool first_slot_free = current_user.borrowed_books_ids[0] == -1;
+    bool secend_slot_free = current_user.borrowed_books_ids[1] == -1;
+    bool third_slot_free = current_user.borrowed_books_ids[2] == -1;
+    if(book_wsk->book_info.available_copies < 1) 
+    {
+        update_current_panel(create_borrow_book_info_subpage(false, "Brak dostępnych egzęplarzy"));
+    }
+    else if(((!first_slot_free)  && book_wsk->book_info.id == current_user.borrowed_books_ids[0]) ||
+            ((!secend_slot_free) && book_wsk->book_info.id == current_user.borrowed_books_ids[1]) ||
+            ((!third_slot_free)  && book_wsk->book_info.id == current_user.borrowed_books_ids[2])  )
+    {
+        update_current_panel(create_borrow_book_info_subpage(false, "Wyporzyczyłeś już jeden egzęplarz tej książki"));
+    }
+    else if(first_slot_free || secend_slot_free || third_slot_free)
+    {
+        int index = 0;
+        while(current_user.borrowed_books_ids[index] != -1) { ++index; }
+        current_user.borrowed_books_ids[index] = book_wsk->book_info.id;
+
+        User_node *wsk = app_data.Users;
+        while(wsk != NULL)
+        {
+            if(wsk->user_info.id == current_user.id) break;
+            wsk = wsk->next;
+        }
+        wsk->user_info.borrowed_books_ids[index] = current_user.borrowed_books_ids[index];
+
+        book_wsk->book_info.available_copies -= 1;
+
+        update_current_panel(create_borrow_book_info_subpage(true, ""));
+    }
+    else update_current_panel(create_borrow_book_info_subpage(false, "Możesz mieć maksymalnie 3 wypożyczone książki na raz!"));
+}
+
+void on_buy_book_button_clicked(GtkButton *button, Book_node *book_wsk)
+{
+    if(book_wsk->book_info.available_copies > 0)
+    {
+        update_current_panel(create_purchase_subpage(true, "", book_wsk));
+    }
+    else update_current_panel(create_purchase_subpage(false, "Aktualnie nie ma wolnych kopi książki", book_wsk));
+    
+}
+
+void on_confirmed_buy(GtkButton *button, Book_node *book_wsk)
+{
+    book_wsk->book_info.available_copies -= 1;
+    book_wsk->book_info.total_copies -= 1;
+
+    if(book_wsk->book_info.total_copies < 1)
+    {
+        delete_book(&(app_data.Books), book_wsk->book_info.id);
+    }
+
+    update_current_panel(create_search_books_page());
+}
+
+void on_sortbooks_button_clicked(GtkButton *button)
+{
+
+}
+
+
 
 GtkWidget* create_borrowed_books_page()
 {
@@ -257,8 +323,10 @@ GtkWidget* create_search_books_page()
 
     gtk_box_append(GTK_BOX(main_box), sort_box);
     gtk_box_append(GTK_BOX(main_box), gtk_label_new("\n"));
-    gtk_box_append(GTK_BOX(main_box), gtk_label_new("Books list:"));
 
+    app_data.entries[3] = gtk_label_new("");
+    gtk_box_append(GTK_BOX(main_box), gtk_label_new("Books list:"));
+    gtk_box_append(GTK_BOX(main_box), app_data.entries[3]);
 
     GtkWidget *book_list_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     Book_node *current_book = app_data.Books; 
@@ -285,6 +353,10 @@ GtkWidget* create_search_books_page()
         gtk_box_append(GTK_BOX(book_list_box), book_hbox2);
         gtk_box_append(GTK_BOX(book_list_box), gtk_label_new("\n"));
 
+        g_signal_connect(buy_button, "clicked", G_CALLBACK(on_buy_book_button_clicked), current_book);
+        g_signal_connect(rent_button, "clicked", G_CALLBACK(on_borrow_book_button_clicked), current_book);
+
+        
         current_book = current_book->next; 
     }
 
@@ -298,6 +370,92 @@ GtkWidget* create_search_books_page()
     return main_box;
 }
 
+GtkWidget* create_purchase_subpage(bool is_sukcess, char *message, Book_node *book_wsk)
+{
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10); 
+    GtkWidget *sherch_menu_button = gtk_button_new_with_label("Powrót do wyszukiwania");
+
+    if(is_sukcess)
+    {    
+        GtkWidget *label1 = gtk_label_new("Czy chcesz zakupić książkę?");
+    
+        const char *formatted_text1 = g_strdup_printf("%s, %s, rok %d", book_wsk->book_info.title, book_wsk->book_info.author, book_wsk->book_info.publication_year);
+        const char *formatted_text2 = g_strdup_printf("Gatunek: %s, dostępnych: %d, cena detaliczna: %.2f $.", book_wsk->book_info.genre, book_wsk->book_info.available_copies, book_wsk->book_info.retail_price);
+        GtkWidget *label2 = gtk_label_new(formatted_text1);
+        GtkWidget *label3 = gtk_label_new(formatted_text2);
+        
+        GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 3); 
+        GtkWidget *buy_button = gtk_button_new_with_label("Tak, kupuje.");
+        
+        gtk_box_append(GTK_BOX(hbox), buy_button);
+        gtk_box_append(GTK_BOX(hbox), gtk_label_new(" "));
+        gtk_box_append(GTK_BOX(hbox), sherch_menu_button);
+        g_signal_connect(buy_button, "clicked", G_CALLBACK(on_confirmed_buy), book_wsk);
+        
+        gtk_box_append(GTK_BOX(box), label1);
+        gtk_box_append(GTK_BOX(box), label2);
+        gtk_box_append(GTK_BOX(box), label3);
+        gtk_box_append(GTK_BOX(box), gtk_label_new(" "));
+        gtk_box_append(GTK_BOX(box), hbox);
+    }
+    else
+    {
+        GtkWidget *label1 = gtk_label_new("Nie można zrealizować zakupu");
+        GtkWidget *label2 = gtk_label_new(message);
+
+        const char *formatted_text1 = g_strdup_printf("%s, %s, rok %d", book_wsk->book_info.title, book_wsk->book_info.author, book_wsk->book_info.publication_year);
+        const char *formatted_text2 = g_strdup_printf("Gatunek: %s, dostępnych: %d, cena detaliczna: %.2f $.", book_wsk->book_info.genre, book_wsk->book_info.available_copies, book_wsk->book_info.retail_price);
+        GtkWidget *label3 = gtk_label_new(formatted_text1);
+        GtkWidget *label4 = gtk_label_new(formatted_text2);
+
+        gtk_box_append(GTK_BOX(box), label1);
+        gtk_box_append(GTK_BOX(box), label2);
+        gtk_box_append(GTK_BOX(box), label3);
+        gtk_box_append(GTK_BOX(box), label4);
+        gtk_box_append(GTK_BOX(box), gtk_label_new(" "));
+        gtk_box_append(GTK_BOX(box), sherch_menu_button);
+
+    }
+    g_signal_connect(sherch_menu_button, "clicked", G_CALLBACK(on_search_books_clicked), NULL);
+
+    return box;
+}
+
+GtkWidget* create_borrow_book_info_subpage(bool is_sukcess, char *message)
+{
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10); 
+    if(is_sukcess)
+    {        
+        GtkWidget *label1 = gtk_label_new("Sukces!");
+        GtkWidget *label2 = gtk_label_new("Książka została dodana do sekcji wypożyczonych książek");   
+
+        gtk_box_append(GTK_BOX(box), label1);
+        gtk_box_append(GTK_BOX(box), label2);
+    }
+    else
+    {
+        GtkWidget *label1 = gtk_label_new("Nie można dodać książek do sekcji wypożyczonych!");
+        GtkWidget *label2 = gtk_label_new(message); 
+
+        gtk_box_append(GTK_BOX(box), label1);
+        gtk_box_append(GTK_BOX(box), label2);
+    }
+
+    GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 3); 
+    GtkWidget *borrowed_books_menu_button = gtk_button_new_with_label("Zobacz wypożyczone książki");
+    GtkWidget *sherch_menu_button = gtk_button_new_with_label("Powrót do wyszukiwarki");
+
+    gtk_box_append(GTK_BOX(hbox), borrowed_books_menu_button);
+    gtk_box_append(GTK_BOX(hbox), gtk_label_new(" "));
+    gtk_box_append(GTK_BOX(hbox), sherch_menu_button);
+    g_signal_connect(borrowed_books_menu_button, "clicked", G_CALLBACK(on_borrowed_books_clicked), NULL);
+    g_signal_connect(sherch_menu_button, "clicked", G_CALLBACK(on_search_books_clicked), NULL);
+    
+    gtk_box_append(GTK_BOX(box), hbox);
+
+
+    return box;
+}
 
 GtkWidget* create_profile_management_page() {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 15);

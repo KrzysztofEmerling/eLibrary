@@ -103,6 +103,12 @@ void add_book(Book_node** head, Book book)
 }
 void delete_book(Book_node** head, int id)
 {
+    if((*head) == NULL)
+    {
+        fprintf(stderr, "Lista jest pusta, nie mozna usunac książki!\n");
+        return;
+    }
+
     Book_node* iterator = *head;
     Book_node* prev = *head;
     while(iterator->next != NULL && iterator->book_info.id != id)
@@ -123,10 +129,27 @@ void delete_book(Book_node** head, int id)
         }
         else
         {
-            prev->next = iterator->next;
-            free(iterator);
-
+            if(prev == iterator)
+            {
+                if(iterator->next == NULL)
+                {
+                    free(iterator);
+                    (*head) = NULL;
+                }
+                else
+                {
+                    *head = iterator->next;
+                    free(iterator);
+                }
+                
+            }
+            else
+            {
+                prev->next = iterator->next;
+                free(iterator);
+            }
             save_books_info(*head);
+
         }
     }
 }
@@ -220,7 +243,6 @@ void delete_user(User_node** head, int id)
         prev = iterator;
         iterator = iterator->next;
     }
-    //dla 1 użytkownika w bazie oba wskazują na head
     if(iterator->user_info.id != id)
     {
         fprintf(stderr, "Nie znaleziono użytkownika o id %d!\n", id);
@@ -232,16 +254,25 @@ void delete_user(User_node** head, int id)
             //obsługa usuwania użytkowników
             if(prev == iterator)
             {
-                free(iterator);
-                (*head) = NULL;
+                if(iterator->next == NULL)
+                {
+                    free(iterator);
+                    (*head) = NULL;
+                }
+                else
+                {
+                    (*head) = iterator->next;
+                    free(iterator);
+                }
             }
             else
             {
                 prev->next = iterator->next;
                 free(iterator);
 
-                save_users_info(*head);
             }
+            save_users_info(*head);
+
         }
         else
         {
