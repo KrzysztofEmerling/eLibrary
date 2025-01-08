@@ -13,8 +13,8 @@ void create_example_data()
     strcpy(user.last_name, "Emerling");
     strcpy(user.email, "a.admin@library.com");
     user.is_admin = true;
-    user.borrowed_books_ids[0] = 12;
-    user.borrowed_books_ids[1] = 6;
+    user.borrowed_books_ids[0] = -1;
+    user.borrowed_books_ids[1] = -1;
     user.borrowed_books_ids[2] = -1;
     hash_password("Admin123!", user.password_hash);
     add_user(&(app_data.Users), user);

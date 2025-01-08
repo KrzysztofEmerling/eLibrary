@@ -74,4 +74,17 @@ void delete_user(User_node** head, int id);
 void print_books(Book_node* head);
 void print_users(User_node* head);
 
+
+void swap_books(Book* a, Book* b);
+
+typedef enum {
+    SORT_BY_TITLE,
+    SORT_BY_AUTHOR,
+    SORT_BY_GENRE,
+    SORT_BY_PRICE,
+    SORT_BY_YEAR
+} SortType;
+
+void sort_books(Book_node* head, SortType sort_type, bool asc);
+
 #endif 

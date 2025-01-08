@@ -24,6 +24,7 @@ void on_confirmed_buy(GtkButton *button, Book_node *book_wsk);
 void on_sortbooks_button_clicked(GtkButton *button);
 void on_borrow_book_button_clicked(GtkButton *button, Book_node *book_wsk);
 
+void create_book_list_subpage();
 GtkWidget* create_purchase_subpage(bool is_sukcess, char *message, Book_node *book_wsk);
 GtkWidget* create_borrow_book_info_subpage(bool is_sukcess, char *message);
 GtkWidget* create_borrowed_books_page();

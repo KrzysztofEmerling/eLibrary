@@ -6,6 +6,9 @@
 
 static GtkWidget *current_panel;
 static GtkWidget *panel_box; 
+
+GtkWidget *books_list = NULL;
+
 static User current_user;
 
 void on_logout_clicked()
@@ -244,9 +247,36 @@ void on_confirmed_buy(GtkButton *button, Book_node *book_wsk)
 
 void on_sortbooks_button_clicked(GtkButton *button)
 {
+    GtkWidget *dropdown = app_data.entries[0];
+    GtkStringObject *selected_item = gtk_drop_down_get_selected_item(GTK_DROP_DOWN(dropdown));
+    const char *selected_sort_option = gtk_string_object_get_string(selected_item);
 
+    gboolean ascending = gtk_check_button_get_active(GTK_CHECK_BUTTON(app_data.entries[1]));
+
+    // Sortowanie książek na podstawie wybranej opcji i kierunku
+    if (g_strcmp0(selected_sort_option, "Tytuł") == 0) 
+    {
+        sort_books(app_data.Books, SORT_BY_TITLE, ascending);
+    } 
+    else if (g_strcmp0(selected_sort_option, "Autor") == 0)
+    {
+        sort_books(app_data.Books, SORT_BY_AUTHOR, ascending);
+    } 
+    else if(g_strcmp0(selected_sort_option, "Gatunek") == 0)
+    {
+        sort_books(app_data.Books, SORT_BY_GENRE, ascending);
+    } 
+    else if (g_strcmp0(selected_sort_option, "Rok wydania") == 0) 
+    {
+        sort_books(app_data.Books, SORT_BY_YEAR, ascending);
+    } 
+    else if (g_strcmp0(selected_sort_option, "Cena") == 0) 
+    {
+        sort_books(app_data.Books, SORT_BY_PRICE, ascending);
+    }
+
+    create_book_list_subpage();
 }
-
 
 
 GtkWidget* create_borrowed_books_page()
@@ -297,10 +327,11 @@ GtkWidget* create_borrowed_books_page()
     return main_box;
 }
 
+
 GtkWidget* create_search_books_page()
 {
     GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-
+    
     // Sortowanie
     GtkWidget *sort_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     GtkWidget *sort_label = gtk_label_new("Sortuj według:");
@@ -310,6 +341,11 @@ GtkWidget* create_search_books_page()
     app_data.entries[0] = gtk_drop_down_new(G_LIST_MODEL(sort_options), NULL);
     app_data.entries[1] = gtk_check_button_new_with_label("⬆");
     app_data.entries[2] = gtk_check_button_new_with_label("⬇");
+    gtk_check_button_set_group(GTK_CHECK_BUTTON(app_data.entries[2]), GTK_CHECK_BUTTON(app_data.entries[1]));
+    
+    // Ustawiamy "ascending" (⬆) jako domyślnie zaznaczony
+    gtk_check_button_set_active(GTK_CHECK_BUTTON(app_data.entries[1]), TRUE);
+
     GtkWidget *sort_button = gtk_button_new_with_label("Sortuj");
     gtk_check_button_set_group(GTK_CHECK_BUTTON(app_data.entries[2]), GTK_CHECK_BUTTON(app_data.entries[1]));
 
@@ -328,46 +364,58 @@ GtkWidget* create_search_books_page()
     gtk_box_append(GTK_BOX(main_box), gtk_label_new("Books list:"));
     gtk_box_append(GTK_BOX(main_box), app_data.entries[3]);
 
-    GtkWidget *book_list_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    Book_node *current_book = app_data.Books; 
-    while (current_book != NULL) 
-    {
-        GtkWidget *book_hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-        GtkWidget *book_hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-        
-        const char *formatted_text1 = g_strdup_printf("%s, %s, rok %d", current_book->book_info.title, current_book->book_info.author, current_book->book_info.publication_year);
-        const char *formatted_text2 = g_strdup_printf("Gatunek: %s, dostępnych: %d, cena detaliczna: %.2f $.", current_book->book_info.genre, current_book->book_info.available_copies, current_book->book_info.retail_price);
-
-        GtkWidget *book_label1 = gtk_label_new(formatted_text1);
-        GtkWidget *rent_button = gtk_button_new_with_label("Wypożycz");
-        GtkWidget *book_label2 = gtk_label_new(formatted_text2);
-        GtkWidget *buy_button = gtk_button_new_with_label("Kup");
-        
-        gtk_box_append(GTK_BOX(book_hbox1), book_label1);
-        gtk_box_append(GTK_BOX(book_hbox1), rent_button);
-
-        gtk_box_append(GTK_BOX(book_hbox2), book_label2);
-        gtk_box_append(GTK_BOX(book_hbox2), buy_button);
-
-        gtk_box_append(GTK_BOX(book_list_box), book_hbox1);
-        gtk_box_append(GTK_BOX(book_list_box), book_hbox2);
-        gtk_box_append(GTK_BOX(book_list_box), gtk_label_new("\n"));
-
-        g_signal_connect(buy_button, "clicked", G_CALLBACK(on_buy_book_button_clicked), current_book);
-        g_signal_connect(rent_button, "clicked", G_CALLBACK(on_borrow_book_button_clicked), current_book);
-
-        
-        current_book = current_book->next; 
-    }
-
-    // Tworzenie okna przewijania
+    // Create a scrolled window to contain the book list
     GtkWidget *scrolled_window = gtk_scrolled_window_new();
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC); 
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
     gtk_widget_set_size_request(scrolled_window, -1, 500); 
-    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), book_list_box);
+
+    books_list = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), books_list);
+
+    create_book_list_subpage();
     gtk_box_append(GTK_BOX(main_box), scrolled_window);
 
+    g_signal_connect(sort_button, "clicked", G_CALLBACK(on_sortbooks_button_clicked), NULL);
+
     return main_box;
+}
+
+void create_book_list_subpage()
+{
+    // Clear existing content
+    GtkWidget *child;
+    while ((child = gtk_widget_get_first_child(books_list)) != NULL) {
+        gtk_box_remove(GTK_BOX(books_list), child);
+    }
+
+    Book_node *current_book = app_data.Books;
+    while (current_book != NULL)
+    {
+        GtkWidget *book_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+        const char *formatted_text1 = g_strdup_printf("%s, %s, rok %d", current_book->book_info.title, current_book->book_info.author, current_book->book_info.publication_year);
+        const char *formatted_text2 = g_strdup_printf("Gatunek: %s, dostępnych: %d, cena detaliczna: %.2f $.", current_book->book_info.genre, current_book->book_info.available_copies, current_book->book_info.retail_price);
+        
+        GtkWidget *book_label1 = gtk_label_new(formatted_text1);
+        GtkWidget *book_label2 = gtk_label_new(formatted_text2);
+        GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+        GtkWidget *rent_button = gtk_button_new_with_label("Wypożycz");
+        GtkWidget *buy_button = gtk_button_new_with_label("Kup");
+        
+        gtk_box_append(GTK_BOX(book_box), book_label1);
+        gtk_box_append(GTK_BOX(book_box), book_label2);
+        gtk_box_append(GTK_BOX(button_box), rent_button);
+        gtk_box_append(GTK_BOX(button_box), buy_button);
+        gtk_box_append(GTK_BOX(book_box), button_box);
+        
+        g_signal_connect(buy_button, "clicked", G_CALLBACK(on_buy_book_button_clicked), current_book);
+        g_signal_connect(rent_button, "clicked", G_CALLBACK(on_borrow_book_button_clicked), current_book);
+        
+        gtk_box_append(GTK_BOX(books_list), book_box);
+        
+        current_book = current_book->next;
+    }
+
+    gtk_widget_set_visible(books_list, TRUE);
 }
 
 GtkWidget* create_purchase_subpage(bool is_sukcess, char *message, Book_node *book_wsk)

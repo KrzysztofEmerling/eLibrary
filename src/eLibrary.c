@@ -281,6 +281,56 @@ void delete_user(User_node** head, int id)
     }
 }
 
+void swap_books(Book* a, Book* b) 
+{
+    Book temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+void sort_books(Book_node* head, SortType sort_type, bool asc)
+{
+    if (!head) return;
+
+    int swapped;
+    Book_node* ptr;
+    Book_node* lptr = NULL;
+
+    do {
+        swapped = 0;
+        ptr = head;
+
+        while (ptr->next != lptr) {
+            int compare = 0;
+            switch (sort_type) {
+                case SORT_BY_TITLE:
+                    compare = strcmp(ptr->book_info.title, ptr->next->book_info.title);
+                    break;
+                case SORT_BY_AUTHOR:
+                    compare = strcmp(ptr->book_info.author, ptr->next->book_info.author);
+                    break;
+                case SORT_BY_GENRE:
+                    compare = strcmp(ptr->book_info.genre, ptr->next->book_info.genre);
+                    break;
+                case SORT_BY_PRICE:
+                    compare = (ptr->book_info.retail_price > ptr->next->book_info.retail_price) ? 1 : -1;
+                    break;
+                case SORT_BY_YEAR:
+                    compare = (ptr->book_info.publication_year > ptr->next->book_info.publication_year) ? 1 : -1;
+                    break;
+            }
+
+            if (asc ? (compare > 0) : (compare < 0)) {
+                swap_books(&ptr->book_info, &ptr->next->book_info);
+                swapped = 1;
+            }
+
+            ptr = ptr->next;
+        }
+        lptr = ptr;
+    } while (swapped);
+}
+
 
 //_____________________ DEBUG _______________________
 
