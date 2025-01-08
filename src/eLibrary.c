@@ -6,6 +6,9 @@
 #include <openssl/sha.h>
 #include <openssl/crypto.h>
 
+
+GtkWidget *current_panel = NULL;
+User current_user = {0};
 void import_books_data(Book_node** head, char* path)
 {
     FILE *file = fopen(path, "r"); 
@@ -57,7 +60,7 @@ void save_books_info(Book_node*  head)
     if (file == NULL) 
     {
         fprintf(stderr, "Unable to write file!\n");
-        
+
         return;
     }
     while(head != NULL)
@@ -141,7 +144,7 @@ void delete_book(Book_node** head, int id)
                     *head = iterator->next;
                     free(iterator);
                 }
-                
+
             }
             else
             {
@@ -184,7 +187,7 @@ void save_users_info(User_node*  head)
     if (file == NULL) 
     {
         fprintf(stderr, "Unable to write file!\n");
-        
+
         return;
     }
     while(head != NULL)

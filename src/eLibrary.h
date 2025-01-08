@@ -1,9 +1,10 @@
-#ifndef ELIBRARY
-#define ELIBRARY
+#ifndef ELIBRARY_H
+#define ELIBRARY_H
 
 #define USERS_DATA_PATH "data/users.bin"
 #define BOOKS_DATA_PATH "data/books.bin"
 
+#include <gtk/gtk.h>
 #include<stdint.h>
 #include<stdbool.h>
 
@@ -61,6 +62,8 @@ typedef struct user_node
 }User_node;
 
 
+extern GtkWidget *current_panel;
+extern User current_user;
 
 void hash_password(const char* plain_password, uint8_t* hashed_password);
 bool secure_compare_hashes(const uint8_t hash1[32], const uint8_t hash2[32]);
@@ -87,4 +90,8 @@ typedef enum {
 
 void sort_books(Book_node* head, SortType sort_type, bool asc);
 
-#endif 
+// Dodaj te deklaracje na końcu pliku, przed #endif
+extern GtkWidget *current_panel;
+extern User current_user;
+
+#endif // ELIBRARY_H

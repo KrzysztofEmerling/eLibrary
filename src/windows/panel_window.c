@@ -4,12 +4,10 @@
 #include <regex.h>
 #include <ctype.h>
 
-static GtkWidget *current_panel;
 static GtkWidget *panel_box; 
 
 GtkWidget *books_list = NULL;
 
-static User current_user;
 
 void on_logout_clicked()
 {
