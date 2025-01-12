@@ -251,12 +251,12 @@ GtkWidget* create_book_import_panel()
 
     GtkWidget *label = gtk_label_new("Przeciągnij plik z książkami tutaj");
     GtkWidget *drop_area = gtk_drawing_area_new();
-    gtk_widget_set_size_request(drop_area, 300, 100);
+    gtk_widget_set_size_request(drop_area, 450, 250);
 
     gtk_box_append(GTK_BOX(import_panel), label);
     gtk_box_append(GTK_BOX(import_panel), drop_area);
 
-    GtkDropTarget *target = gtk_drop_target_new(G_TYPE_STRING, GDK_ACTION_COPY);
+    GtkDropTarget *target = gtk_drop_target_new(G_TYPE_FILE, GDK_ACTION_COPY);
     gtk_drop_target_set_preload(target, TRUE);
     g_signal_connect(target, "drop", G_CALLBACK(on_drop), NULL);
     gtk_widget_add_controller(drop_area, GTK_EVENT_CONTROLLER(target));
@@ -266,18 +266,30 @@ GtkWidget* create_book_import_panel()
 
 void on_drop(GtkDropTarget *target, const GValue *value, double x, double y, gpointer user_data)
 {
-    if (G_VALUE_HOLDS(value, G_TYPE_STRING)) {
-        const char *uri = g_value_get_string(value);
-        char *filename = g_filename_from_uri(uri, NULL, NULL);
-        if (filename != NULL) {
-            import_books_data(&(app_data.Books), filename);
+    g_print("Upuszczono plik\n");
 
-            char *new_filename = g_strconcat(filename, "-IMPORTED", NULL);
-            rename(filename, new_filename);
+    if (G_VALUE_HOLDS(value, G_TYPE_FILE)) {
+        GFile *file = g_value_get_object(value);
+        char *path = g_file_get_path(file);
 
+        if (path != NULL) {
+            g_print("Odczytano ścieżkę pliku: %s\n", path);
+
+            import_books_data(&(app_data.Books), path);
+
+            char *new_filename = g_strconcat(path, "-IMPORTED", NULL);
+            if (rename(path, new_filename) == 0) {
+            } else 
+            {
+                g_print("Błąd podczas przemianowywania pliku\n");
+            }
             g_free(new_filename);
-            g_free(filename);
+            g_free(path);
+        } else {
+            g_print("Nie udało się uzyskać ścieżki pliku\n");
         }
+    } else {
+        g_print("Otrzymana wartość nie jest typu GFile\n");
     }
 }
 
