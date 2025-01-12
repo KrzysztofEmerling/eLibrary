@@ -7,7 +7,6 @@
 #include <openssl/crypto.h>
 
 
-GtkWidget *current_panel = NULL;
 User current_user = {0};
 void import_books_data(Book_node** head, char* path)
 {

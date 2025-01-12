@@ -62,7 +62,6 @@ typedef struct user_node
 }User_node;
 
 
-extern GtkWidget *current_panel;
 extern User current_user;
 
 void hash_password(const char* plain_password, uint8_t* hashed_password);
@@ -89,9 +88,5 @@ typedef enum {
 } SortType;
 
 void sort_books(Book_node* head, SortType sort_type, bool asc);
-
-// Dodaj te deklaracje na końcu pliku, przed #endif
-extern GtkWidget *current_panel;
-extern User current_user;
 
 #endif // ELIBRARY_H

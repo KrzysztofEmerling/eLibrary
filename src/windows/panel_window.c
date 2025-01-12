@@ -7,8 +7,8 @@
 
 
 static GtkWidget *panel_box; 
-
-GtkWidget *books_list = NULL;
+static GtkWidget *current_panel;
+static GtkWidget *books_list;
 
 
 void on_logout_clicked()
@@ -24,6 +24,12 @@ void on_logout_clicked()
     {
         gtk_widget_unparent(books_list);
         books_list = NULL;
+    }
+
+    if(panel_box != NULL)
+    {
+        gtk_widget_unparent(panel_box);
+        panel_box = NULL;
     }
 
     change_window(LOGIN);
@@ -68,7 +74,7 @@ void on_return_button_clicked(GtkButton *button, Book_node *book_wsk)
     }
     current_user.borrowed_books_ids[index] = -1;
     book_wsk->book_info.available_copies += 1;
-     
+
     User_node *wsk = app_data.Users;
     while(wsk != NULL)
     {
@@ -107,7 +113,7 @@ void on_change_email_button_clicked(GtkButton *button)
     else
     {
         gtk_editable_set_text(GTK_EDITABLE(app_data.entries[0]), "");
-        gtk_label_set_text(GTK_LABEL(app_data.entries[1]), "Email został zmieniony.");
+        gtk_label_set_text(GTK_LABEL(app_data.entries[1]), "Email został zmieniony.");
 
         User_node* wsk = app_data.Users;
 
@@ -232,7 +238,7 @@ void on_buy_book_button_clicked(GtkButton *button, Book_node *book_wsk)
         update_current_panel(create_purchase_subpage(true, "", book_wsk));
     }
     else update_current_panel(create_purchase_subpage(false, "Aktualnie nie ma wolnych kopi książki", book_wsk));
-    
+
 }
 
 void on_confirmed_buy(GtkButton *button, Book_node *book_wsk)
@@ -318,12 +324,12 @@ GtkWidget* create_borrowed_books_page()
             app_data.entries[1 + 2 * i] = gtk_button_new_with_label("Oddaj");
             gtk_widget_set_sensitive(app_data.entries[1 + 2 * i], FALSE);
         }
-        
+
         gtk_box_append(GTK_BOX(item_box), app_data.entries[0 + 2 * i]);
         gtk_box_append(GTK_BOX(item_box), app_data.entries[1 + 2 * i]);
         gtk_box_append(GTK_BOX(item_box), gtk_label_new("\n"));
         if(!is_empty) g_signal_connect(app_data.entries[1 + 2 * i], "clicked", G_CALLBACK(on_return_button_clicked), wsk);
-        
+
         gtk_box_append(GTK_BOX(main_box), item_box);
     }
 
@@ -334,7 +340,7 @@ GtkWidget* create_borrowed_books_page()
 GtkWidget* create_search_books_page()
 {
     GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    
+
     // Sortowanie
     GtkWidget *sort_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     GtkWidget *sort_label = gtk_label_new("Sortuj według:");
@@ -345,7 +351,7 @@ GtkWidget* create_search_books_page()
     app_data.entries[1] = gtk_check_button_new_with_label("⬆");
     app_data.entries[2] = gtk_check_button_new_with_label("⬇");
     gtk_check_button_set_group(GTK_CHECK_BUTTON(app_data.entries[2]), GTK_CHECK_BUTTON(app_data.entries[1]));
-    
+
     // Ustawiamy "ascending" (⬆) jako domyślnie zaznaczony
     gtk_check_button_set_active(GTK_CHECK_BUTTON(app_data.entries[1]), TRUE);
 
@@ -387,7 +393,8 @@ void create_book_list_subpage()
 {
     // Clear existing content
     GtkWidget *child;
-    while ((child = gtk_widget_get_first_child(books_list)) != NULL) {
+    while ((child = gtk_widget_get_first_child(GTK_WIDGET(books_list))) != NULL) 
+    {
         gtk_box_remove(GTK_BOX(books_list), child);
     }
 
@@ -397,24 +404,24 @@ void create_book_list_subpage()
         GtkWidget *book_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
         const char *formatted_text1 = g_strdup_printf("%s, %s, rok %d", current_book->book_info.title, current_book->book_info.author, current_book->book_info.publication_year);
         const char *formatted_text2 = g_strdup_printf("Gatunek: %s, dostępnych: %d, cena detaliczna: %.2f $.", current_book->book_info.genre, current_book->book_info.available_copies, current_book->book_info.retail_price);
-        
+
         GtkWidget *book_label1 = gtk_label_new(formatted_text1);
         GtkWidget *book_label2 = gtk_label_new(formatted_text2);
         GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
         GtkWidget *rent_button = gtk_button_new_with_label("Wypożycz");
         GtkWidget *buy_button = gtk_button_new_with_label("Kup");
-        
+
         gtk_box_append(GTK_BOX(book_box), book_label1);
         gtk_box_append(GTK_BOX(book_box), book_label2);
         gtk_box_append(GTK_BOX(button_box), rent_button);
         gtk_box_append(GTK_BOX(button_box), buy_button);
         gtk_box_append(GTK_BOX(book_box), button_box);
-        
+
         g_signal_connect(buy_button, "clicked", G_CALLBACK(on_buy_book_button_clicked), current_book);
         g_signal_connect(rent_button, "clicked", G_CALLBACK(on_borrow_book_button_clicked), current_book);
-        
+
         gtk_box_append(GTK_BOX(books_list), book_box);
-        
+
         current_book = current_book->next;
     }
 
@@ -429,20 +436,20 @@ GtkWidget* create_purchase_subpage(bool is_sukcess, char *message, Book_node *bo
     if(is_sukcess)
     {    
         GtkWidget *label1 = gtk_label_new("Czy chcesz zakupić książkę?");
-    
+
         const char *formatted_text1 = g_strdup_printf("%s, %s, rok %d", book_wsk->book_info.title, book_wsk->book_info.author, book_wsk->book_info.publication_year);
         const char *formatted_text2 = g_strdup_printf("Gatunek: %s, dostępnych: %d, cena detaliczna: %.2f $.", book_wsk->book_info.genre, book_wsk->book_info.available_copies, book_wsk->book_info.retail_price);
         GtkWidget *label2 = gtk_label_new(formatted_text1);
         GtkWidget *label3 = gtk_label_new(formatted_text2);
-        
+
         GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 3); 
         GtkWidget *buy_button = gtk_button_new_with_label("Tak, kupuje.");
-        
+
         gtk_box_append(GTK_BOX(hbox), buy_button);
         gtk_box_append(GTK_BOX(hbox), gtk_label_new(" "));
         gtk_box_append(GTK_BOX(hbox), sherch_menu_button);
         g_signal_connect(buy_button, "clicked", G_CALLBACK(on_confirmed_buy), book_wsk);
-        
+
         gtk_box_append(GTK_BOX(box), label1);
         gtk_box_append(GTK_BOX(box), label2);
         gtk_box_append(GTK_BOX(box), label3);
@@ -501,7 +508,7 @@ GtkWidget* create_borrow_book_info_subpage(bool is_sukcess, char *message)
     gtk_box_append(GTK_BOX(hbox), sherch_menu_button);
     g_signal_connect(borrowed_books_menu_button, "clicked", G_CALLBACK(on_borrowed_books_clicked), NULL);
     g_signal_connect(sherch_menu_button, "clicked", G_CALLBACK(on_search_books_clicked), NULL);
-    
+
     gtk_box_append(GTK_BOX(box), hbox);
 
 
@@ -510,7 +517,7 @@ GtkWidget* create_borrow_book_info_subpage(bool is_sukcess, char *message)
 
 GtkWidget* create_profile_management_page() {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 15);
-    
+
     GtkWidget *profile_label = gtk_label_new("Zarządzanie profilem użytkownika");
     gtk_box_append(GTK_BOX(box), profile_label);
 
@@ -526,7 +533,7 @@ GtkWidget* create_profile_management_page() {
     gtk_box_append(GTK_BOX(box), change_email_button);
     gtk_box_append(GTK_BOX(box), app_data.entries[1]);
     g_signal_connect(change_email_button, "clicked", G_CALLBACK(on_change_email_button_clicked), NULL);
-    
+
     // Sekcja zmiany hasła
     GtkWidget *password_label = gtk_label_new("Zmiana hasła:");
     app_data.entries[2] = gtk_entry_new();
@@ -542,35 +549,35 @@ GtkWidget* create_profile_management_page() {
     gtk_entry_set_placeholder_text(GTK_ENTRY(app_data.entries[4]), "Powtórz nowe hasło");
     GtkWidget *change_password_button = gtk_button_new_with_label("Zmień hasło");
     app_data.entries[5] = gtk_label_new("");
-    
+
     gtk_box_append(GTK_BOX(box), password_label);
     gtk_box_append(GTK_BOX(box), app_data.entries[2]);   
     gtk_box_append(GTK_BOX(box), app_data.entries[3]);  
     gtk_box_append(GTK_BOX(box), app_data.entries[4]);
     gtk_box_append(GTK_BOX(box), change_password_button);
     gtk_box_append(GTK_BOX(box), app_data.entries[5]);
-    
+
     g_signal_connect(change_password_button, "clicked", G_CALLBACK(on_change_passward_button_clicked), NULL);
-    
+
     // Sekcja usuwania konta
     GtkWidget *delete_label = gtk_label_new("Usuń konto:");
     GtkWidget *delete_button = gtk_button_new_with_label("Usuń konto");
     app_data.entries[6] = gtk_label_new("");
 
-    
+
     gtk_box_append(GTK_BOX(box), delete_label);
     gtk_box_append(GTK_BOX(box), delete_button);
     gtk_box_append(GTK_BOX(box), app_data.entries[6]);
 
     g_signal_connect(delete_button, "clicked", G_CALLBACK(on_delete_button_clicked), NULL);
-    
+
     return box;
 }
 
 GtkWidget* load_panel_screen()
 {
     panel_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10); 
-    
+
     User_node* wsk = app_data.Users;
     while(wsk != NULL)
     {
@@ -588,15 +595,15 @@ GtkWidget* load_panel_screen()
     current_user.borrowed_books_ids[2] = wsk->user_info.borrowed_books_ids[2];
 
     const char *formatted_text = g_strdup_printf("Witaj\n%s, %s!",current_user.first_name , current_user.last_name);
-    
+
     GtkWidget *sidebar = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     GtkWidget *label1 = gtk_label_new(formatted_text);
     GtkWidget *label2 = gtk_label_new("\n");
-    
+
     GtkWidget *borrowed_books_button = gtk_button_new_with_label("Wyporzyczone książki");
     GtkWidget *search_books_button = gtk_button_new_with_label("Szukaj książek");
     GtkWidget *profile_management_button = gtk_button_new_with_label("Profil");
-    
+
     GtkWidget *label3 = gtk_label_new("\n");
     GtkWidget *logout_button = gtk_button_new_with_label("Logout");
 
