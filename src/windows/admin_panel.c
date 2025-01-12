@@ -176,14 +176,18 @@ void on_tab_switched(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpo
     GtkWidget *content_container = GTK_WIDGET(user_data);
     GtkWidget *child;
 
-    for(int i = 0; i < 10; i++)
+    if(!current_user.id == -1)
     {
-        if(app_data.entries[i] != NULL)
+        for(int i = 0; i < 10; i++)
         {
-            gtk_widget_unparent(app_data.entries[i]);
-            app_data.entries[i] = NULL;
+            if(app_data.entries[i] != NULL)
+            {
+                gtk_widget_unparent(app_data.entries[i]);
+                app_data.entries[i] = NULL;
+            }
         }
     }
+    
     while ((child = gtk_widget_get_first_child(content_container)) != NULL)
     {
         gtk_box_remove(GTK_BOX(content_container), child);

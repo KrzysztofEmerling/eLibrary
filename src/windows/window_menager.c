@@ -16,6 +16,15 @@ void change_window(Window_type wt)
         current_widget = NULL;
     }
 
+    // for (int i = 0; i < 10; i++) 
+    // {
+    //     if (app_data.entries[i] != NULL && GTK_IS_WIDGET(app_data.entries[i])) 
+    //     {
+    //         gtk_widget_unparent(app_data.entries[i]);  
+    //         app_data.entries[i] = NULL;              
+    //     }
+    // }
+
     switch (wt)
     {
         case LOGIN:
@@ -37,7 +46,7 @@ void change_window(Window_type wt)
 
         case ADMIN_PANEL:
             new_widget = load_admin_panel();
-            //new_widget = load_panel_screen();
+            // new_widget = load_panel_screen();
     }
 
     gtk_window_set_child(GTK_WINDOW(app_data.window), new_widget);
