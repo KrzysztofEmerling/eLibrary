@@ -14,13 +14,28 @@ GtkWidget *books_list = NULL;
 void on_logout_clicked()
 {
     app_data.current_user_id = -1;
+    if (current_panel != NULL) 
+    {
+        gtk_widget_unparent(current_panel);
+        current_panel = NULL;
+    }
+
+    if(books_list!=NULL)
+    {
+        gtk_widget_unparent(books_list);
+        books_list = NULL;
+    }
+
     change_window(LOGIN);
+
 }
 
 void update_current_panel(GtkWidget *new_panel)
 {
-    if (current_panel != NULL) {
+    if (current_panel != NULL) 
+    {
         gtk_widget_unparent(current_panel);
+        current_panel = NULL;
     }
     current_panel = new_panel; 
     gtk_box_append(GTK_BOX(panel_box), current_panel); 
