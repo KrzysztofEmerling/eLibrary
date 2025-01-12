@@ -1,8 +1,8 @@
 
 #include "window_menager.h"
 #include "login_window.h"
+#include "../utility.h"
 
-#include <regex.h>
 #include <ctype.h>
 
 
@@ -68,56 +68,37 @@ void on_register_submit_clicked(GtkButton *button)
         user.email[i] = tolower(user.email[i]);
     }
 
-    // Walidacja imienia
-    if (!isalpha(first_name[0]) || !isalnum(first_name[0])) 
+    const char* error_msg;
+    if (!validate_first_name(user.first_name, &error_msg)) 
     {
         gtk_editable_set_text(GTK_EDITABLE(app_data.entries[0]), "");
-        gtk_label_set_text(GTK_LABEL(app_data.entries[5]), "Imię musi zaczynać się od litery.");
+        gtk_label_set_text(GTK_LABEL(app_data.entries[5]), error_msg);
         return;
     }
     user.first_name[0] = toupper(user.first_name[0]); 
-
-    // Walidacja nazwiska
-    if (!isalpha(last_name[0]) || !isalnum(last_name[0])) 
+    if (!validate_last_name(user.last_name, &error_msg)) 
     {
         gtk_editable_set_text(GTK_EDITABLE(app_data.entries[1]), "");
-        gtk_label_set_text(GTK_LABEL(app_data.entries[5]), "Nazwisko musi zaczynać się od litery.");
+        gtk_label_set_text(GTK_LABEL(app_data.entries[5]), error_msg);
         return;
     }
     user.last_name[0] = toupper(user.last_name[0]); 
 
-    // Walidacja emaila
-    regex_t regex;
-    int reti = regcomp(&regex, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", REG_EXTENDED);
-    if (reti)
-    {
-        gtk_label_set_text(GTK_LABEL(app_data.entries[5]), "Błąd przy sprawdzaniu emaila.");
-        return;
-    }
-    reti = regexec(&regex, email, 0, NULL, 0);
-    regfree(&regex);
-    if (reti) 
+    if (!validate_email(user.email, &error_msg)) 
     {
         gtk_editable_set_text(GTK_EDITABLE(app_data.entries[2]), "");
-        gtk_label_set_text(GTK_LABEL(app_data.entries[5]), "Niepoprawny format emaila.");
+        gtk_label_set_text(GTK_LABEL(app_data.entries[5]), error_msg);
         return;
     }
 
-    // Sprawdzenie hasła
-    if (strcmp(password, confirm_password) != 0)
+    if (!validate_password(password, confirm_password, &error_msg)) 
     {
-        gtk_label_set_text(GTK_LABEL(app_data.entries[5]), "Hasła nie pasują do siebie.");
+        gtk_label_set_text(GTK_LABEL(app_data.entries[5]), error_msg);
         gtk_editable_set_text(GTK_EDITABLE(app_data.entries[3]), "");
         gtk_editable_set_text(GTK_EDITABLE(app_data.entries[4]), "");
         return;
     }
-    if(strlen(password) < 6)
-    {
-        gtk_label_set_text(GTK_LABEL(app_data.entries[5]), "Minimalna długość hasła to 6 znaków.");
-        gtk_editable_set_text(GTK_EDITABLE(app_data.entries[3]), "");
-        gtk_editable_set_text(GTK_EDITABLE(app_data.entries[4]), "");  
-        return;
-    }
+
 
     add_user(&(app_data.Users), user);
     change_window(REGISTRATION_INFO);

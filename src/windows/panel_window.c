@@ -1,8 +1,10 @@
 #include "panel_window.h"
 
 #include "window_menager.h"
-#include <regex.h>
+#include "../utility.h"
+
 #include <ctype.h>
+
 
 static GtkWidget *panel_box; 
 
@@ -81,20 +83,11 @@ void on_change_email_button_clicked(GtkButton *button)
         email[i] = tolower(email[i]);
     }
 
-    regex_t regex;
-    int reti = regcomp(&regex, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", REG_EXTENDED);
-    if (reti)
-    {
-        gtk_label_set_text(GTK_LABEL(app_data.entries[1]), "Błąd przy sprawdzaniu emaila.");
-        return;
-    }
-    reti = regexec(&regex, email, 0, NULL, 0);
-    regfree(&regex);
-    if (reti) 
+    const char* error_msg;
+    if (!validate_email(email, &error_msg), error_msg) 
     {
         gtk_editable_set_text(GTK_EDITABLE(app_data.entries[0]), "");
-        gtk_label_set_text(GTK_LABEL(app_data.entries[1]), "Niepoprawny format emaila.");
-        
+        gtk_label_set_text(GTK_LABEL(app_data.entries[1]), error_msg);   
     }
     else
     {
@@ -135,25 +128,18 @@ void on_change_passward_button_clicked(GtkButton *button)
         wsk = wsk->next;
     }
 
-    // Sprawdzenie hasła
+    const char* error_msg;
     if(!secure_compare_hashes(wsk->user_info.password_hash, old_hash))
     {
         gtk_label_set_text(GTK_LABEL(app_data.entries[5]), "Stare hasło nie jest poprawne.");
         gtk_editable_set_text(GTK_EDITABLE(app_data.entries[2]), "");     
         return;
     }
-    else if (strcmp(new_pass1 , new_pass2) != 0)
+    else if (!validate_password(new_pass1, new_pass2, &error_msg))
     {
-        gtk_label_set_text(GTK_LABEL(app_data.entries[5]), "Hasła nie pasują do siebie.");
+        gtk_label_set_text(GTK_LABEL(app_data.entries[5]), error_msg);
         gtk_editable_set_text(GTK_EDITABLE(app_data.entries[3]), "");
         gtk_editable_set_text(GTK_EDITABLE(app_data.entries[4]), "");
-        return;
-    }
-    else if(strlen(new_pass1 ) < 6)
-    {
-        gtk_label_set_text(GTK_LABEL(app_data.entries[5]), "Minimalna długość hasła to 6 znaków.");
-        gtk_editable_set_text(GTK_EDITABLE(app_data.entries[3]), "");
-        gtk_editable_set_text(GTK_EDITABLE(app_data.entries[4]), "");  
         return;
     }
 
@@ -164,6 +150,10 @@ void on_change_passward_button_clicked(GtkButton *button)
         wsk->user_info.password_hash[i] = new_hash[i];
     }
 
+    gtk_editable_set_text(GTK_EDITABLE(app_data.entries[2]), "");     
+    gtk_editable_set_text(GTK_EDITABLE(app_data.entries[3]), "");
+    gtk_editable_set_text(GTK_EDITABLE(app_data.entries[4]), "");
+    gtk_label_set_text(GTK_LABEL(app_data.entries[5]), "Hasło zostało zmienione.");
 }
 
 void on_delete_button_clicked(GtkButton *button)
