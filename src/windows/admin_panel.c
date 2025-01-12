@@ -5,6 +5,46 @@
 #include "panel_window.h"
 #include <ctype.h>
 
+static GtkWidget *employee_list_box;
+
+void create_admin_list_subpage()
+{
+    // Clear existing content
+    GtkWidget *child;
+    while ((child = gtk_widget_get_first_child(employee_list_box)) != NULL) {
+        gtk_list_box_remove(GTK_LIST_BOX(employee_list_box), child);
+    }
+
+    User_node *user_wsk = app_data.Users;
+    while (user_wsk != NULL)
+    {
+        if (user_wsk->user_info.is_admin)
+        {
+            GtkWidget *admin_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+            const char *formatted_text = g_strdup_printf("%s %s (%s)", 
+                user_wsk->user_info.first_name, 
+                user_wsk->user_info.last_name, 
+                user_wsk->user_info.email);
+
+            GtkWidget *admin_label = gtk_label_new(formatted_text);
+
+            GtkWidget *delete_button = gtk_button_new_with_label("Usuń");
+            g_signal_connect(delete_button, "clicked", G_CALLBACK(on_delete_admin_clicked), GINT_TO_POINTER(user_wsk->user_info.id));
+
+            if (user_wsk->user_info.id == current_user.id) 
+            {
+                gtk_widget_set_sensitive(delete_button, FALSE);
+            }
+
+            gtk_box_append(GTK_BOX(admin_box), admin_label);
+            gtk_box_append(GTK_BOX(admin_box), delete_button);
+            gtk_list_box_append(GTK_LIST_BOX(employee_list_box), admin_box);
+        }
+        user_wsk = user_wsk->next;
+    }
+
+    gtk_widget_set_visible(employee_list_box, TRUE);
+}
 GtkWidget* create_add_employee_page()
 {
     GtkWidget *add_employee_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
@@ -103,10 +143,7 @@ void on_add_employee_clicked(GtkButton *button)
     }
 
     add_user(&(app_data.Users), user);
-
-    GtkWidget *success_label = gtk_label_new("Pracownik został pomyślnie dodany!");
-    gtk_box_append(GTK_BOX(current_panel), success_label);
-    
+    create_admin_list_subpage();
 
 }
 
@@ -137,12 +174,24 @@ GtkWidget* load_admin_panel()
 void on_tab_switched(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpointer user_data)
 {
     GtkWidget *content_container = GTK_WIDGET(user_data);
-
     GtkWidget *child;
-    while ((child = gtk_widget_get_first_child(content_container)) != NULL) {
+
+    if(!current_user.id == -1)
+    {
+        for(int i = 0; i < 10; i++)
+        {
+            if(app_data.entries[i] != NULL)
+            {
+                gtk_widget_unparent(app_data.entries[i]);
+                app_data.entries[i] = NULL;
+            }
+        }
+    }
+    
+    while ((child = gtk_widget_get_first_child(content_container)) != NULL)
+    {
         gtk_box_remove(GTK_BOX(content_container), child);
     }
-
     if (page_num == 0) {
         // Zakładka Admin Panel
         GtkWidget *admin_panel = create_admin_panel();
@@ -163,14 +212,11 @@ GtkWidget* create_admin_sidebar()
     const char *formatted_text = g_strdup_printf("Witaj\n%s, %s!", current_user.first_name, current_user.last_name);
     GtkWidget *label2 = gtk_label_new(formatted_text);
     GtkWidget *label3 = gtk_label_new("\n");
-    GtkWidget *logout_button = gtk_button_new_with_label("Logout");
 
 
     gtk_box_append(GTK_BOX(sidebar), label1);
     gtk_box_append(GTK_BOX(sidebar), label2);
     gtk_box_append(GTK_BOX(sidebar), label3);
-    gtk_box_append(GTK_BOX(sidebar), logout_button);
-    g_signal_connect(logout_button, "clicked", G_CALLBACK(on_logout_clicked), NULL);
 
     return sidebar;
 }
@@ -183,6 +229,7 @@ GtkWidget* create_admin_panel()
     gtk_box_append(GTK_BOX(admin_panel), sidebar);
 
     // Main content area
+
     GtkWidget *content_area = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
 
     // Upper panel for book import
@@ -191,8 +238,8 @@ GtkWidget* create_admin_panel()
 
     // Lower panel for employee management
     GtkWidget *employee_panel = create_employee_management_panel();
-    gtk_box_append(GTK_BOX(content_area), employee_panel);
 
+    gtk_box_append(GTK_BOX(content_area), employee_panel);
     gtk_box_append(GTK_BOX(admin_panel), content_area);
 
     return admin_panel;
@@ -236,18 +283,19 @@ void on_drop(GtkDropTarget *target, const GValue *value, double x, double y, gpo
 
 GtkWidget* create_employee_management_panel()
 {
+
     GtkWidget *employee_panel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
 
     // Panel dodawania pracownika
     GtkWidget *add_employee = create_add_employee_page();
     gtk_box_append(GTK_BOX(employee_panel), add_employee);
 
-    // Lista adminów
-    GtkWidget *admin_list = create_admin_list();
-    gtk_box_append(GTK_BOX(employee_panel), admin_list);
-
+    employee_list_box = gtk_list_box_new();
+    gtk_box_append(GTK_BOX(employee_panel), employee_list_box);
+    create_admin_list_subpage();
     return employee_panel;
 }
+
 
 GtkWidget* create_admin_list()
 {
@@ -288,13 +336,11 @@ GtkWidget* create_admin_list()
     return scrolled_window;
 }
 
+
 void on_delete_admin_clicked(GtkButton *button, gpointer user_data)
 {
     int user_id = GPOINTER_TO_INT(user_data);
     delete_user(&(app_data.Users), user_id);
     // Odśwież listę adminów
-    GtkWidget *list_box = gtk_widget_get_parent(gtk_widget_get_parent(GTK_WIDGET(button)));
-    gtk_widget_unparent(list_box);
-    GtkWidget *new_list = create_admin_list();
-    gtk_box_append(GTK_BOX(gtk_widget_get_parent(list_box)), new_list);
+    create_admin_list_subpage();
 }
