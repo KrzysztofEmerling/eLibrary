@@ -260,7 +260,7 @@ GtkWidget* create_book_import_panel()
 
     GtkWidget *label = gtk_label_new("Przeciągnij plik z książkami tutaj");
     GtkWidget *drop_area = gtk_drawing_area_new();
-    gtk_widget_set_size_request(drop_area, 450, 250);
+    gtk_widget_set_size_request(drop_area, 500, 120);
 
     gtk_box_append(GTK_BOX(import_panel), label);
     gtk_box_append(GTK_BOX(import_panel), drop_area);

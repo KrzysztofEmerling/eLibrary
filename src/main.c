@@ -31,8 +31,8 @@ static void on_activate(GtkApplication *app)
     gtk_window_set_title(app_data.window, "E-Library");
     gtk_window_set_decorated(app_data.window, TRUE);
     
-    int width = 2560 * 0.5;
-    int height = 1080 * 0.8;
+    int width = 650;
+    int height = 800;
     gtk_window_set_default_size(app_data.window, width, height);
 
     change_window(LOGIN);
