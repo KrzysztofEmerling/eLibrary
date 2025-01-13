@@ -570,6 +570,10 @@ GtkWidget* create_profile_management_page() {
     gtk_box_append(GTK_BOX(box), app_data.entries[6]);
 
     g_signal_connect(delete_button, "clicked", G_CALLBACK(on_delete_button_clicked), NULL);
+    if(current_user.is_admin) 
+    {
+        gtk_widget_set_sensitive(delete_button, false);
+    }
 
     return box;
 }

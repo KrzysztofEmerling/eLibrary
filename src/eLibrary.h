@@ -31,7 +31,7 @@ typedef struct book_node
     Book_node* next;    
 }Book_node;
 
-void import_books_data(Book_node** head, char* path);
+int import_books_data(Book_node** head, char* path);
 
 void load_books_info(Book_node** head);
 void save_books_info(Book_node*  head);

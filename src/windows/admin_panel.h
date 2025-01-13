@@ -17,7 +17,8 @@ void on_add_employee_page_clicked(GtkButton *button);
 GtkWidget* create_book_import_panel();
 void on_drop(GtkDropTarget *target, const GValue *value, double x, double y, gpointer user_data);
 GtkWidget* create_employee_management_panel();
-GtkWidget* create_admin_list();
 void on_delete_admin_clicked(GtkButton *button, gpointer user_data);
+void on_degrade_admin_clicked(GtkButton *button, User* user);
+
 
 #endif // ADMIN_PANEL_H

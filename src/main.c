@@ -20,7 +20,7 @@ void create_example_data()
     add_user(&(app_data.Users), user);
     save_users_info(app_data.Users);
 
-    import_books_data(&(app_data.Books), "books.txt");
+    //import_books_data(&(app_data.Books), "books.txt");
     save_books_info(app_data.Books);
 }
 
@@ -46,10 +46,10 @@ int main(int argc, char *argv[]) {
     app_data.Books = NULL;  
     app_data.current_user_id = -1;
 
-    // create_example_data();
+    create_example_data();
     
-    load_users_info(&app_data.Users); 
-    load_books_info(&app_data.Books); 
+    // load_users_info(&app_data.Users); 
+    // load_books_info(&app_data.Books); 
 
     
     GtkApplication *app = gtk_application_new("com.simple.library.app.gtk4", G_APPLICATION_DEFAULT_FLAGS);

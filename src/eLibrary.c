@@ -8,13 +8,15 @@
 
 
 User current_user = {0};
-void import_books_data(Book_node** head, char* path)
+int import_books_data(Book_node** head, char* path)
 {
+    int imported_books = 0;
+
     FILE *file = fopen(path, "r"); 
     if (file == NULL) 
     {
         fprintf(stderr, "Unable to open file!\n");
-        return;
+        return imported_books;
     }
 
     char line[512]; 
@@ -31,10 +33,12 @@ void import_books_data(Book_node** head, char* path)
                &book.retail_price);
 
         book.available_copies = book.total_copies;
+        ++imported_books;
         add_book(head, book);
     }
 
     fclose(file); 
+    return imported_books;
 }
 
 void load_books_info(Book_node** head)
@@ -52,6 +56,7 @@ void load_books_info(Book_node** head)
     }
 
     fclose(file);
+    return;
 }
 void save_books_info(Book_node*  head)
 {
