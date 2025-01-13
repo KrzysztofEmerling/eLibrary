@@ -1,0 +1,4 @@
+1;Kurt Vonnegut;Slaughterhouse-Five;Science Fiction;1969;10;18.99;
+2;Haruki Murakami;Norwegian Wood;Romance;1987;12;16.49;
+3;Umberto Eco;The Name of the Rose;Historical;1980;8;21.99;
+4;Gabriel Garcia Marquez;Love in the Time of Cholera;Magical Realism;1985;7;19.99;

@@ -1,4 +1,6 @@
 #include"eLibrary.h"
+#include "utility.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,15 +25,19 @@ int import_books_data(Book_node** head, char* path)
     while (fgets(line, sizeof(line), file))
     {
         Book book;
-        sscanf(line, "%d;%63[^;];%255[^;];%63[^;];%d;%d;%f;",
-               &book.id,
-               book.author,
-               book.title,
-               book.genre,
-               &book.publication_year,
-               &book.total_copies,
-               &book.retail_price);
+        char tocken1[64], tocken2[64], tocken3[256];
+        char tocken4[64], tocken5[64], tocken6[64], tocken7[64];
 
+        split(line, tocken1, tocken2, tocken3, tocken4, tocken5, tocken6, tocken7, ';');
+
+        book.id = books_counter;
+        strcpy(book.author, tocken2);
+        strcpy(book.title, tocken3);
+        strcpy(book.genre, tocken4);
+        book.publication_year = atoi(tocken5);
+        book.total_copies = atoi(tocken6);
+        book.retail_price = atof(tocken7);
+        
         book.available_copies = book.total_copies;
         ++imported_books;
         add_book(head, book);

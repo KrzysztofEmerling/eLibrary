@@ -101,8 +101,6 @@ GtkWidget* create_add_employee_page()
 
 void on_add_employee_clicked(GtkButton *button)
 {
-    g_print("adding employee\n");
-    
     const char *first_name = gtk_editable_get_text(GTK_EDITABLE(app_data.entries[0]));
     const char *last_name = gtk_editable_get_text(GTK_EDITABLE(app_data.entries[1]));
     const char *email = gtk_editable_get_text(GTK_EDITABLE(app_data.entries[2]));
@@ -155,10 +153,7 @@ void on_add_employee_clicked(GtkButton *button)
     }
 
     add_user(&(app_data.Users), user);
-    g_print("refreshing admin list\n");
     create_admin_list_subpage();
-    g_print("end adding employee\n");
-
 }
 
 GtkWidget* load_admin_panel()
@@ -187,11 +182,9 @@ GtkWidget* load_admin_panel()
 
 void on_tab_switched(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpointer user_data)
 {
-    g_print("Switched to page %d\n", page_num);
     GtkWidget *content_container = GTK_WIDGET(user_data);
     GtkWidget *child;
 
-    g_print("Clearing content container\n");
     if(!current_user.id == -1)
     {
         for(int i = 0; i < 10; i++)
@@ -207,7 +200,6 @@ void on_tab_switched(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpo
     {
         gtk_box_remove(GTK_BOX(content_container), child);
     }
-    g_print("Loading new content\n");
 
     if (page_num == 0) {
         // Zakładka Admin Panel
@@ -218,7 +210,6 @@ void on_tab_switched(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpo
         GtkWidget *user_panel = load_panel_screen();
         gtk_box_append(GTK_BOX(content_container), user_panel);
     }
-    g_print("End switching page\n");
 }
 
 GtkWidget* create_admin_sidebar()
@@ -285,13 +276,12 @@ GtkWidget* create_book_import_panel()
 
 void on_drop(GtkDropTarget *target, const GValue *value, double x, double y, gpointer user_data)
 {
-    g_print("start droping book\n");
     if (G_VALUE_HOLDS(value, G_TYPE_FILE)) 
     {
         GFile *file = g_value_get_object(value);
         char *path = g_file_get_path(file);
 
-        if (path != NULL) \
+        if (path != NULL) 
         {
             int imported_books = import_books_data(&(app_data.Books), path);
             if(imported_books == 0)
@@ -316,8 +306,6 @@ void on_drop(GtkDropTarget *target, const GValue *value, double x, double y, gpo
             gtk_label_set_text(GTK_LABEL(app_data.entries[6]), "Nie udalo sie uzyskac sciezki pliku");   
         }
     }
-    g_print("end droping book\n");
-
 }
 
 GtkWidget* create_employee_management_panel()
@@ -346,7 +334,6 @@ GtkWidget* create_employee_management_panel()
 
 void on_delete_admin_clicked(GtkButton *button, gpointer user_data)
 {
-    g_print("start deleting admin\n");
     int user_id = GPOINTER_TO_INT(user_data);
     User_node *current = app_data.Users;
     while(current!= NULL)
@@ -364,18 +351,12 @@ void on_delete_admin_clicked(GtkButton *button, gpointer user_data)
     }
 
     // Odśwież listę adminów
-    g_print("refreshing admins list\n");
     create_admin_list_subpage();
-    g_print("end deleting admin\n");
-
 }
+
 
 void on_degrade_admin_clicked(GtkButton *button, User* user)
 {
-    g_print("degrading admin\n");
     user->is_admin = false;
-    g_print("refreshing admins list\n");
     create_admin_list_subpage();
-    g_print("end degrading admin\n");
-
 }

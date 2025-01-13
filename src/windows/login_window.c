@@ -128,7 +128,6 @@ GtkWidget* load_login_screen()
     gtk_box_append(GTK_BOX(login_box), app_data.entries[2]);
     gtk_box_append(GTK_BOX(login_box), login_button);
     gtk_box_append(GTK_BOX(login_box), register_button);
-
     return login_box;
 }
 
@@ -184,6 +183,7 @@ GtkWidget* load_registration_info_screen()
     gtk_box_append(GTK_BOX(register_info_box), label1);
     gtk_box_append(GTK_BOX(register_info_box), label2);
     gtk_box_append(GTK_BOX(register_info_box), login_button);
+
     return register_info_box;
 }
 

@@ -20,12 +20,6 @@ void on_logout_clicked()
         current_panel = NULL;
     }
 
-    if(books_list!=NULL)
-    {
-        gtk_widget_unparent(books_list);
-        books_list = NULL;
-    }
-
     if(panel_box != NULL)
     {
         gtk_widget_unparent(panel_box);

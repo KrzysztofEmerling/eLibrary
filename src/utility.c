@@ -69,3 +69,64 @@ bool validate_password(const char* password, const char* confirm_password, const
 
     return true;
 }
+
+void split(const char* str, char* tocken1, char* tocken2, char* tocken3, char* tocken4, char* tocken5, char* tocken6, char* tocken7, const char delimiter)
+{
+    const char* current = str;
+    int delim_counter = 0;
+    while(*current != '\0')
+    {
+        if(*current++ == delimiter) ++delim_counter;
+    }
+    if(delim_counter == 7)
+    {
+        current = str;
+        while(*current != delimiter)
+        {
+            *tocken1++ = *current++;
+        }
+        *tocken1 = '\0';
+        ++current;
+
+        while(*current != delimiter)
+        {
+            *tocken2++ = *current++;
+        }
+        *tocken2 = '\0';
+        ++current;
+
+        while(*current != delimiter)
+        {
+            *tocken3++ = *current++;
+        }
+        *tocken3 = '\0';
+        ++current;
+
+        while(*current != delimiter)
+        {
+            *tocken4++ = *current++;
+        }
+        *tocken4 = '\0';
+        ++current;
+
+        while(*current != delimiter)
+        {
+            *tocken5++ = *current++;
+        }
+        *tocken5 = '\0';
+        ++current;
+
+        while(*current != delimiter)
+        {
+            *tocken6++ = *current++;
+        }
+        *tocken6 = '\0';
+        ++current;
+
+        while(*current != '\0')
+        {
+            *tocken7++ = *current++;
+        }
+        *tocken7 = '\0';
+    }
+}

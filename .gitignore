@@ -53,6 +53,4 @@ dkms.conf
 
 eLibrary
 
-*.bin
-*.png
 .vscode/
